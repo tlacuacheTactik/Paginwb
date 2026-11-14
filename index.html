@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GUÍA — Lentes inteligentes que detectan obstáculos en tu camino</title>
+<meta name="description" content="Prototipo académico de lentes con cámara ESP32-CAM y red neuronal YOLOv8 que avisan mediante patrones de pitidos sobre postes, baches y ramas.">
+<meta property="og:title" content="GUÍA — Lentes que te dicen qué hay en tu camino">
+<meta property="og:description" content="Tecnología asistiva con visión artificial para personas con discapacidad visual. Escucha cómo funcionan los avisos.">
+<meta property="og:type" content="website">
+<script>
+  document.documentElement.classList.add('js');
+  (function(){
+    try {
+      var saved = localStorage.getItem('guia-theme');
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch(e) {}
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #E6EAEE;
+  --fg: #0F1B2D;
+  --muted: #3B4A5E;
+  --band: #0F1B2D;
+  --bandfg: #E6EAEE;
+  --lamp: #FFB400;
+  --line: #B7C0CA;
+  --focus: #1D4ED8;
+  --card-surface: #FFFFFF;
+  --ok: #15803D;
+  --err: #B91C1C;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1422;
+    --fg: #E6EAEE;
+    --muted: #A9B5C3;
+    --band: #16263D;
+    --bandfg: #E6EAEE;
+    --line: #2B3C54;
+    --focus: #FFB400;
+    --card-surface: #122035;
+    --ok: #4ADE80;
+    --err: #F87171;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1422;
+  --fg: #E6EAEE;
+  --muted: #A9B5C3;
+  --band: #16263D;
+  --bandfg: #E6EAEE;
+  --line: #2B3C54;
+  --focus: #FFB400;
+  --card-surface: #122035;
+  --ok: #4ADE80;
+  --err: #F87171;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: 1.5rem; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Atkinson Hyperlegible", system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  transition: background-color .2s ease, color .2s ease;
+}
+.wrap { max-width: 62rem; margin: 0 auto; padding: 0 1.25rem; }
+
+/* Skip link accesible */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: .75rem;
+  z-index: 100;
+  background: var(--lamp);
+  color: #0F1B2D;
+  font-weight: 700;
+  padding: .75rem 1.25rem;
+  border-radius: .4rem;
+  text-decoration: none;
+}
+.skip:focus { left: 1rem; }
+
+/* Barra superior minimalista */
+header {
+  border-bottom: 1px solid var(--line);
+  padding: .85rem 0;
+}
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+.brand {
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: .04em;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+.brandDot {
+  width: .75rem;
+  height: .75rem;
+  border-radius: 50%;
+  background: var(--lamp);
+  display: inline-block;
+}
+.topControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.chipBtn {
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 700;
+  padding: .5rem .9rem;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+.chipBtn[aria-pressed="true"] {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--bg);
+}
+
+section { padding: 3.5rem 0; }
+h1 {
+  font-size: clamp(2.4rem, 7.5vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  margin: 0 0 1.25rem;
+  max-width: 14ch;
+}
+h2 {
+  font-size: clamp(1.65rem, 4.5vw, 2.35rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+h3 { font-size: 1.35rem; margin: 0 0 .75rem; }
+p { margin: 0 0 1rem; max-width: 40rem; }
+.lead { font-size: 1.3rem; color: var(--muted); }
+
+.btn {
+  display: inline-block;
+  padding: .9rem 1.4rem;
+  margin: .25rem .5rem .25rem 0;
+  font: inherit;
+  font-weight: 700;
+  border-radius: .45rem;
+  border: 2px solid var(--fg);
+  background: var(--fg);
+  color: var(--bg);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .15s, background-color .15s, color .15s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(1px); }
+.btn.alt { background: transparent; color: var(--fg); }
+
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.hero { padding-top: 3.5rem; }
+.band { background: var(--band); color: var(--bandfg); }
+.band .btn {
+  background: transparent;
+  border-color: var(--lamp);
+  color: var(--bandfg);
+}
+.band .btn.primary,
+.band .btn[aria-pressed="true"] {
+  background: var(--lamp);
+  border-color: var(--lamp);
+  color: #0F1B2D;
+}
+
+.demoControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 1.25rem 0 .5rem;
+}
+#aviso {
+  font-size: clamp(1.8rem, 5.5vw, 3rem);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--lamp);
+  min-height: 3.2em;
+  margin: 1.5rem 0 0;
+  transition: opacity .2s;
+}
+#aviso.cambia { opacity: .15; }
+
+ol { padding-left: 1.4rem; max-width: 40rem; }
+li { margin: 0 0 .9rem; }
+
+.tabla { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 28rem; }
+th, td {
+  text-align: left;
+  padding: .85rem 1rem .85rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+th { font-weight: 700; }
+
+details {
+  border-bottom: 1px solid var(--line);
+  padding: 1rem 0;
+  max-width: 44rem;
+}
+summary { font-weight: 700; cursor: pointer; }
+details p { margin: .75rem 0 0; }
+
+footer {
+  padding: 2rem 0 3rem;
+  color: var(--muted);
+  font-size: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.dots { display: flex; gap: .75rem; margin-top: 1.25rem; }
+.dots i {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  border: 2px solid var(--lamp);
+  transition: background .1s, transform .1s;
+}
+.dots i.on { background: var(--lamp); transform: scale(1.15); }
+
+.heroGrid { display: grid; gap: 2rem; align-items: center; }
+@media (min-width: 52rem) { .heroGrid { grid-template-columns: 1.25fr 1fr; } }
+
+.visual {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-width: 21rem;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+}
+.ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border: 3px solid var(--lamp);
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulso 3.2s ease-out infinite;
+}
+.ring:nth-child(2) { animation-delay: 1.05s; }
+.ring:nth-child(3) { animation-delay: 2.1s; }
+@keyframes pulso {
+  0% { transform: scale(.25); opacity: .9; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.visual svg { position: relative; width: 78%; height: auto; color: var(--fg); }
+
+.precioGrid { display: grid; gap: 1.5rem; }
+@media (min-width: 52rem) { .precioGrid { grid-template-columns: 1fr 1.15fr; } }
+
+.card {
+  background: var(--band);
+  color: var(--bandfg);
+  border-radius: 1.25rem;
+  padding: 2rem;
+}
+.card .btn {
+  background: var(--lamp);
+  border-color: var(--lamp);
+  color: #0F1B2D;
+  width: 100%;
+  text-align: center;
+}
+.card ul { padding-left: 1.2rem; margin: .5rem 0 1rem; }
+
+.precio {
+  font-size: clamp(2.5rem, 8vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--lamp);
+  margin: .25rem 0 .5rem;
+}
+
+.cant { display: flex; align-items: center; gap: 1rem; margin: .75rem 0 1.25rem; }
+.cant button {
+  width: 3rem;
+  height: 3rem;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.cant output { min-width: 2ch; font-size: 1.6rem; font-weight: 700; text-align: center; }
+#total { font-size: 1.55rem; font-weight: 700; color: var(--lamp); }
+
+/* Formularios listos para Supabase */
+.formGrid { display: grid; gap: 1rem; margin-top: 1rem; }
+.field { display: flex; flex-direction: column; gap: .35rem; }
+.field label { font-weight: 700; font-size: 1rem; }
+.field input, .field textarea, .field select {
+  font: inherit;
+  padding: .75rem .9rem;
+  border-radius: .45rem;
+  border: 2px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  width: 100%;
+}
+.card .field input, .card .field textarea, .card .field select {
+  background: #0B1422;
+  color: #E6EAEE;
+  border-color: #3B5272;
+}
+.statusMsg {
+  margin-top: .85rem;
+  font-weight: 700;
+  min-height: 1.5em;
+}
+.statusMsg.ok { color: var(--ok); }
+.statusMsg.err { color: var(--err); }
+.card .statusMsg.ok { color: #4ADE80; }
+.card .statusMsg.err { color: #F87171; }
+
+.js .rv { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+.js .rv.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+@media (prefers-reduced-motion: reduce) {
+  #aviso, .btn, body { transition: none; }
+  .ring { animation: none; opacity: .3; transform: scale(.5); }
+  .ring:nth-child(2) { transform: scale(.75); }
+  .ring:nth-child(3) { transform: scale(1); }
+  .js .rv { opacity: 1; transform: none; transition: none; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#demo">Saltar a la prueba de sonido</a>
+
+<header>
+  <div class="wrap topBar">
+    <span class="brand"><span class="brandDot" aria-hidden="true"></span>GUÍA</span>
+    <div class="topControls">
+      <button type="button" class="chipBtn" id="toggleTema" aria-pressed="false">Modo oscuro</button>
+    </div>
+  </div>
+</header>
+
+<main id="contenido">
+
+<section class="hero">
+  <div class="wrap heroGrid">
+    <div>
+      <h1>Lentes que te dicen qué hay en tu camino</h1>
+      <p class="lead">GUÍA usa una cámara y una red neuronal para reconocer postes, baches y otros obstáculos, y te avisa con pitidos según el tipo de obstáculo.</p>
+      <p>Es un prototipo académico en pruebas, pensado para personas con discapacidad visual.</p>
+      <a class="btn" href="#demo">Escuchar un aviso</a>
+      <a class="btn alt" href="#precio">Apartar prototipo</a>
+    </div>
+    <div class="visual" aria-hidden="true">
+      <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+      <svg viewBox="0 0 200 90">
+        <g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="12" y="22" width="68" height="46" rx="16"/>
+          <rect x="120" y="22" width="68" height="46" rx="16"/>
+          <path d="M80 40q20-14 40 0M12 36L2 28M188 36l10-8"/>
+        </g>
+        <circle cx="100" cy="30" r="7" fill="#FFB400"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section id="demo" class="band">
+  <div class="wrap">
+    <h2>Así suena un aviso</h2>
+    <p>Cada obstáculo tiene su propio patrón de pitidos. Elige uno para escucharlo. Si no oyes nada, sube el volumen: el texto aparece igual.</p>
+    <div class="demoControls" role="group" aria-label="Simulador de alertas de obstáculos">
+      <button type="button" class="btn" data-n="1" data-msg="1 pitido: poste" aria-pressed="false">Poste</button>
+      <button type="button" class="btn" data-n="2" data-msg="2 pitidos: poste caído" aria-pressed="false">Poste caído</button>
+      <button type="button" class="btn" data-n="3" data-msg="3 pitidos: bache o banqueta rota" aria-pressed="false">Bache o banqueta rota</button>
+      <button type="button" class="btn" data-n="4" data-msg="4 pitidos: rama" aria-pressed="false">Rama</button>
+    </div>
+    <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <p id="aviso" role="status" aria-live="polite">Toca un botón para escuchar el aviso.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Cómo funciona</h2>
+    <ol>
+      <li>La cámara de los lentes mira lo que hay adelante.</li>
+      <li>Una red neuronal reconoce qué obstáculo es.</li>
+      <li>Un mini buzzer pita: una vez para poste, dos para poste caído, tres para bache o banqueta rota y cuatro para rama.</li>
+    </ol>
+    <p>La red neuronal aprendió viendo miles de fotografías etiquetadas de calles y banquetas, corrigiendo sus errores hasta identificar obstáculos nuevos en tiempo real.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Qué detecta hoy</h2>
+    <div class="tabla">
+      <table>
+        <thead><tr><th>Obstáculo</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>Poste</td><td>Funciona en pruebas</td></tr>
+          <tr><td>Poste caído o inclinado</td><td>Funciona en pruebas</td></tr>
+          <tr><td>Bache o banqueta rota</td><td>En entrenamiento</td></tr>
+          <tr><td>Rama de árbol</td><td>En desarrollo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Lo que hemos medido</h2>
+    <p>Probamos el modelo (YOLOv8) con fotos que nunca había visto. Estos son los resultados reales, sin redondear hacia arriba.</p>
+    <div class="tabla">
+      <table>
+        <thead><tr><th>Medida</th><th>Resultado</th><th>Qué significa</th></tr></thead>
+        <tbody>
+          <tr><td>Precisión</td><td>0.85</td><td>Cuando avisa, casi siempre acierta.</td></tr>
+          <tr><td>Recall</td><td>0.53</td><td>Todavía se le escapa cerca de la mitad de los obstáculos.</td></tr>
+          <tr><td>mAP50</td><td>0.56</td><td>Medida general de qué tan bien los encuentra y los ubica.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1rem">Por eso GUÍA es una ayuda extra, no un reemplazo del bastón. Seguimos ampliando el conjunto de fotos para mejorar estos números.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Qué lleva</h2>
+    <ul>
+      <li>Una cámara ESP32-CAM con lente gran angular, montada en los lentes.</li>
+      <li>Un power bank de 5 V que se lleva en el bolsillo, para no tener una batería junto a la cabeza.</li>
+      <li>Un mini buzzer en los lentes que pita según el obstáculo. No tapa los oídos, así que sigues oyendo la calle.</li>
+    </ul>
+    <p>Hoy el procesamiento corre en una laptop. El siguiente paso es llevar todo a un dispositivo portátil.</p>
+  </div>
+</section>
+
+<section id="precio">
+  <div class="wrap">
+    <h2>Precio de preventa</h2>
+    <div class="precioGrid">
+      <div class="card rv">
+        <p style="margin:0">Cada unidad</p>
+        <p class="precio">$1,449 MXN</p>
+        <p>Precio estimado de preventa. Puede cambiar antes de la entrega.</p>
+        <ul>
+          <li>Lentes con cámara ESP32-CAM gran angular</li>
+          <li>Power bank de 5 V y cables</li>
+          <li>Mini buzzer con 4 patrones de pitidos</li>
+          <li>Carcasa impresa en 3D</li>
+        </ul>
+        <p>En esta versión de prueba, el procesamiento corre en tu laptop.</p>
+      </div>
+
+      <div class="card rv">
+        <h3>Aparta tu unidad</h3>
+        <div class="cant">
+          <button type="button" id="menos" aria-label="Quitar una unidad">−</button>
+          <output id="cant" aria-live="polite">1</output>
+          <button type="button" id="mas" aria-label="Agregar una unidad">+</button>
+          <span>Total: <strong id="total">$1,449 MXN</strong></span>
+        </div>
+
+        <form id="formPedido" class="formGrid" novalidate>
+          <div class="field">
+            <label for="pedNombre">Nombre completo</label>
+            <input type="text" id="pedNombre" name="nombre" required autocomplete="name" placeholder="Ej. María López">
+          </div>
+          <div class="field">
+            <label for="pedContacto">Correo electrónico o WhatsApp</label>
+            <input type="text" id="pedContacto" name="contacto" required autocomplete="email" placeholder="correo@ejemplo.com o 33 1234 5678">
+          </div>
+          <div class="field">
+            <label for="pedNota">Notas adicionales (opcional)</label>
+            <input type="text" id="pedNota" name="nota" placeholder="Ej. Ciudad, uso personal o institución">
+          </div>
+          <button type="submit" class="btn">Registrar apartado</button>
+          <p id="pedStatus" class="statusMsg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿Reemplaza al bastón o al perro guía?</summary><p>No. Es un complemento que avisa de obstáculos; no garantiza detectarlos todos.</p></details>
+    <details><summary>¿Funciona de noche?</summary><p>Todavía no lo hemos probado con poca luz. La cámara necesita buena iluminación para reconocer bien.</p></details>
+    <details><summary>¿Cuánto cuesta?</summary><p>El precio de preventa estimado es de $1,449 MXN por unidad. Es un prototipo y puede cambiar antes de la entrega.</p></details>
+  </div>
+</section>
+
+<section id="contacto" class="band">
+  <div class="wrap">
+    <h2>Quiero saber más o colaborar</h2>
+    <p>Si quieres probar el prototipo, dar opinión o colaborar en el entrenamiento de datos, déjanos tus datos.</p>
+    <form id="formContacto" class="formGrid" style="max-width:34rem" novalidate>
+      <div class="field">
+        <label for="conNombre">Tu nombre</label>
+        <input type="text" id="conNombre" name="nombre" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="conCorreo">Tu correo o teléfono</label>
+        <input type="text" id="conCorreo" name="contacto" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="conMensaje">¿Cómo te gustaría participar?</label>
+        <textarea id="conMensaje" name="mensaje" rows="3" required placeholder="Quiero probar el prototipo, aportar fotos de obstáculos, etc."></textarea>
+      </div>
+      <div>
+        <button type="submit" class="btn primary">Enviar mensaje</button>
+      </div>
+      <p id="conStatus" class="statusMsg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+<footer>
+  <div class="wrap">Proyecto académico de Ingeniería en Computación, UTEG.</div>
+</footer>
+
+<!-- SDK de Supabase con defer para no bloquear la carga offline -->
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  /* =========================================================
+     1. CONFIGURACIÓN DE SUPABASE (Pega tus llaves aquí)
+     ========================================================= */
+  var SUPABASE_URL = ''; // Ej: 'https://xyzcompany.supabase.co'
+  var SUPABASE_ANON_KEY = ''; // Ej: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+  function getDB() {
+    if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+      return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return null;
+  }
+
+  /* =========================================================
+     2. TEMA CLARO / OSCURO
+     ========================================================= */
+  var root = document.documentElement;
+  var btnTema = document.getElementById('toggleTema');
+
+  function actualizarBtnTema() {
+    var esOscuro = root.getAttribute('data-theme') === 'dark' ||
+      (!root.hasAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    btnTema.setAttribute('aria-pressed', esOscuro ? 'true' : 'false');
+    btnTema.textContent = esOscuro ? 'Modo claro' : 'Modo oscuro';
+  }
+  actualizarBtnTema();
+
+  btnTema.addEventListener('click', function() {
+    var esOscuro = btnTema.getAttribute('aria-pressed') === 'true';
+    var nuevo = esOscuro ? 'light' : 'dark';
+    root.setAttribute('data-theme', nuevo);
+    try { localStorage.setItem('guia-theme', nuevo); } catch(e) {}
+    actualizarBtnTema();
+  });
+
+  /* =========================================================
+     3. SIMULADOR DE PITIDOS (SOLO BUZZER)
+     ========================================================= */
+  var aviso = document.getElementById('aviso');
+  var ctx = null;
+  var timersPitidos = [];
+  var dots = document.querySelectorAll('.dots i');
+  var demoBtns = document.querySelectorAll('.demoControls button[data-msg]');
+
+  function pitar(k, freq) {
+    freq = freq || 2000;
+    try {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!ctx) ctx = new AudioCtx();
+
+      timersPitidos.forEach(function(id) { clearTimeout(id); });
+      timersPitidos = [];
+      dots.forEach(function(d) { d.classList.remove('on'); });
+
+      var lanzar = function() {
+        var base = ctx.currentTime + 0.03;
+        for (var i = 0; i < k; i++) {
+          (function(idx) {
+            var t0 = base + idx * 0.32;
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.type = 'square';
+            o.frequency.setValueAtTime(freq, t0);
+
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.linearRampToValueAtTime(0.18, t0 + 0.015);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.start(t0);
+            o.stop(t0 + 0.2);
+
+            var tid = setTimeout(function() {
+              if (dots[idx]) dots[idx].classList.add('on');
+            }, idx * 320 + 30);
+            timersPitidos.push(tid);
+          })(i);
+        }
+      };
+
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(lanzar);
+      } else {
+        lanzar();
+      }
+    } catch (e) {}
+  }
+
+  demoBtns.forEach(function(b) {
+    b.addEventListener('click', function() {
+      demoBtns.forEach(function(btn) { btn.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+
+      var t = b.getAttribute('data-msg');
+      var k = parseInt(b.getAttribute('data-n'), 10);
+
+      aviso.classList.add('cambia');
+      setTimeout(function() {
+        aviso.textContent = t;
+        aviso.classList.remove('cambia');
+      }, 140);
+
+      pitar(k, 2000);
+    });
+  });
+
+  /* =========================================================
+     4. ANIMACIONES DE ENTRADA
+     ========================================================= */
+  var rv = document.querySelectorAll('.rv');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(es) {
+      es.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: .15 });
+    rv.forEach(function(el) { io.observe(el); });
+  } else {
+    rv.forEach(function(el) { el.classList.add('in'); });
+  }
+
+  /* =========================================================
+     5. CALCULADORA DE UNIDADES Y FORMULARIOS (SUPABASE)
+     ========================================================= */
+  var n = 1, P = 1449;
+  var cant = document.getElementById('cant'), tot = document.getElementById('total');
+  function fmt(x) { return '$' + x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' MXN'; }
+  function act() {
+    cant.textContent = n;
+    tot.textContent = fmt(n * P);
+  }
+  document.getElementById('mas').addEventListener('click', function() { if (n < 10) { n++; act(); } });
+  document.getElementById('menos').addEventListener('click', function() { if (n > 1) { n--; act(); } });
+  act();
+
+  // Envío de apartado
+  var formPedido = document.getElementById('formPedido');
+  var pedStatus = document.getElementById('pedStatus');
+  formPedido.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var nombre = document.getElementById('pedNombre').value.trim();
+    var contacto = document.getElementById('pedContacto').value.trim();
+    var nota = document.getElementById('pedNota').value.trim();
+
+    if (!nombre || !contacto) {
+      pedStatus.className = 'statusMsg err';
+      pedStatus.textContent = 'Por favor escribe tu nombre y un medio de contacto.';
+      return;
+    }
+
+    var registro = {
+      nombre: nombre,
+      contacto: contacto,
+      unidades: n,
+      total_mxn: n * P,
+      nota: nota
+    };
+
+    pedStatus.className = 'statusMsg';
+    pedStatus.textContent = 'Guardando apartado...';
+
+    var db = getDB();
+    if (db) {
+      var res = await db.from('apartados').insert([registro]);
+      if (res.error) {
+        pedStatus.className = 'statusMsg err';
+        pedStatus.textContent = 'Error al guardar: ' + res.error.message;
+        return;
+      }
+    } else {
+      var guardados = JSON.parse(localStorage.getItem('guia_apartados') || '[]');
+      guardados.push(Object.assign({ fecha: new Date().toISOString() }, registro));
+      localStorage.setItem('guia_apartados', JSON.stringify(guardados));
+    }
+
+    pitar(2, 1200);
+    pedStatus.className = 'statusMsg ok';
+    pedStatus.textContent = '¡Apartado registrado para ' + nombre + ' (' + n + (n === 1 ? ' unidad' : ' unidades') + ')!';
+    formPedido.reset();
+    n = 1;
+    act();
+  });
+
+  // Envío de contacto / voluntarios
+  var formContacto = document.getElementById('formContacto');
+  var conStatus = document.getElementById('conStatus');
+  formContacto.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var nombre = document.getElementById('conNombre').value.trim();
+    var contacto = document.getElementById('conCorreo').value.trim();
+    var mensaje = document.getElementById('conMensaje').value.trim();
+
+    if (!nombre || !contacto || !mensaje) {
+      conStatus.className = 'statusMsg err';
+      conStatus.textContent = 'Completa todos los campos para enviar tu mensaje.';
+      return;
+    }
+
+    var registro = { nombre: nombre, contacto: contacto, mensaje: mensaje };
+    conStatus.className = 'statusMsg';
+    conStatus.textContent = 'Enviando mensaje...';
+
+    var db = getDB();
+    if (db) {
+      var res = await db.from('mensajes').insert([registro]);
+      if (res.error) {
+        conStatus.className = 'statusMsg err';
+        conStatus.textContent = 'Error al enviar: ' + res.error.message;
+        return;
+      }
+    } else {
+      var msgs = JSON.parse(localStorage.getItem('guia_mensajes') || '[]');
+      msgs.push(Object.assign({ fecha: new Date().toISOString() }, registro));
+      localStorage.setItem('guia_mensajes', JSON.stringify(msgs));
+    }
+
+    pitar(2, 1200);
+    conStatus.className = 'statusMsg ok';
+    conStatus.textContent = '¡Gracias, ' + nombre + '! Recibimos tu mensaje correctamente.';
+    formContacto.reset();
+  });
+})();
+</script>
+</body>
+</html>

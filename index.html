@@ -1,390 +1,1111 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GuíaVisión | Navegación Asistida Inteligente</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #070b14;
-      --bg-card: rgba(15, 23, 42, 0.65);
-      --accent-cyan: #00f0ff;
-      --accent-blue: #3b82f6;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-glass: rgba(0, 240, 255, 0.18);
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GUÍA — Lentes inteligentes con visión artificial</title>
+<meta name="description" content="Prototipo académico de lentes con cámara ESP32-CAM y red neuronal YOLOv8 que avisan mediante patrones de pitidos sobre postes, baches y ramas.">
+<meta property="og:title" content="GUÍA — Lentes que te dicen qué hay en tu camino">
+<meta property="og:description" content="Tecnología asistiva con visión artificial para personas con discapacidad visual. Escucha cómo funcionan los avisos.">
+<meta property="og:type" content="website">
+<script>
+  document.documentElement.classList.add('js');
+  (function(){
+    try {
+      var saved = localStorage.getItem('guia-theme');
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch(e) {}
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F1F5F9;
+  --fg: #09111E;
+  --muted: #475569;
+  --surface: rgba(255, 255, 255, 0.85);
+  --surface-solid: #FFFFFF;
+  --band: #0B1324;
+  --bandfg: #F8FAFC;
+  --accent: #0284C7;
+  --accent-glow: rgba(2, 132, 199, 0.25);
+  --lamp: #F59E0B;
+  --lamp-glow: rgba(245, 158, 11, 0.35);
+  --line: rgba(15, 23, 42, 0.14);
+  --grid-color: rgba(2, 132, 199, 0.06);
+  --focus: #0284C7;
+  --ok: #15803D;
+  --err: #B91C1C;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+:root[data-theme="dark"] {
+  --bg: #060B16;
+  --fg: #F1F5F9;
+  --muted: #94A3B8;
+  --surface: rgba(15, 23, 42, 0.68);
+  --surface-solid: #0F172A;
+  --band: #0B1324;
+  --bandfg: #F8FAFC;
+  --accent: #00F0FF;
+  --accent-glow: rgba(0, 240, 255, 0.28);
+  --lamp: #FFB400;
+  --lamp-glow: rgba(255, 180, 0, 0.35);
+  --line: rgba(0, 240, 255, 0.18);
+  --grid-color: rgba(0, 240, 255, 0.045);
+  --focus: #FFB400;
+  --ok: #4ADE80;
+  --err: #F87171;
+}
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: 5rem; -webkit-text-size-adjust: 100%; }
 
-    /* Fondo animado con cuadrícula tecnológica */
-    .tech-grid {
-      position: fixed;
-      inset: 0;
-      background-image: 
-        linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
-      background-size: 48px 48px;
-      z-index: -2;
-    }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.65;
+  transition: background-color .25s ease, color .25s ease;
+  overflow-x: hidden;
+}
 
-    .glow-orb {
-      position: fixed;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, transparent 70%);
-      top: -150px;
-      right: -100px;
-      z-index: -1;
-      pointer-events: none;
-    }
+/* Fondo tecnológico sutil */
+.techBg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+  z-index: -2;
+}
+.ambientGlow {
+  position: fixed;
+  width: 34rem;
+  height: 34rem;
+  top: -10rem;
+  right: -8rem;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
 
-    /* Navbar Glassmorphism */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: blur(14px);
-      background: rgba(7, 11, 20, 0.75);
-      border-bottom: 1px solid var(--border-glass);
-      padding: 1rem 6%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+.wrap { max-width: 66rem; margin: 0 auto; padding: 0 1.35rem; }
+.mono { font-family: "JetBrains Mono", monospace; }
 
-    .logo {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      font-size: 1.3rem;
-      letter-spacing: 1px;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+/* Skip link accesible */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: .75rem;
+  z-index: 100;
+  background: var(--lamp);
+  color: #060B16;
+  font-weight: 700;
+  padding: .75rem 1.25rem;
+  border-radius: .5rem;
+  text-decoration: none;
+}
+.skip:focus { left: 1rem; }
 
-    .logo span {
-      color: var(--accent-cyan);
-    }
+/* Header Glassmorphism */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  border-bottom: 1px solid var(--line);
+  padding: .85rem 0;
+}
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+.brand {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: .06em;
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+}
+.brandDot {
+  width: .75rem;
+  height: .75rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: beacon 2.2s infinite;
+}
+@keyframes beacon {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: .55; }
+}
+.navLinks {
+  display: none;
+  gap: 1.5rem;
+}
+@media (min-width: 48rem) {
+  .navLinks { display: flex; }
+}
+.navLinks a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .95rem;
+  font-weight: 700;
+  transition: color .2s;
+}
+.navLinks a:hover { color: var(--accent); }
 
-    .pulse-dot {
-      width: 10px;
-      height: 10px;
-      background: var(--accent-cyan);
-      border-radius: 50%;
-      box-shadow: 0 0 12px var(--accent-cyan);
-      animation: pulse 2s infinite;
-    }
+.chipBtn {
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  padding: .45rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+  transition: border-color .2s, transform .15s;
+}
+.chipBtn:hover { border-color: var(--accent); transform: translateY(-1px); }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.5; }
-    }
+section { padding: 4.25rem 0; }
 
-    nav a {
-      color: var(--text-muted);
-      text-decoration: none;
-      margin-left: 2rem;
-      font-size: 0.95rem;
-      transition: color 0.25s;
-    }
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid var(--line);
+  padding: .35rem .85rem;
+  border-radius: 999px;
+  margin-bottom: 1.1rem;
+}
 
-    nav a:hover {
-      color: var(--accent-cyan);
-    }
+h1 {
+  font-size: clamp(2.4rem, 6.2vw, 4.15rem);
+  line-height: 1.06;
+  letter-spacing: -.02em;
+  margin: 0 0 1.25rem;
+}
+.gradText {
+  background: linear-gradient(120deg, var(--fg) 25%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+h2 {
+  font-size: clamp(1.75rem, 4.2vw, 2.5rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+h3 { font-size: 1.3rem; margin: 0 0 .65rem; }
+p { margin: 0 0 1rem; max-width: 42rem; }
+.lead { font-size: 1.25rem; color: var(--muted); }
 
-    /* Hero Section */
-    .hero {
-      min-height: 88vh;
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      align-items: center;
-      gap: 3rem;
-      padding: 4rem 6%;
-    }
+/* Botones principales */
+.btnGroup { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .9rem 1.5rem;
+  font: inherit;
+  font-weight: 700;
+  border-radius: .65rem;
+  border: 2px solid var(--accent);
+  background: var(--accent);
+  color: #060B16;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: transform .18s, box-shadow .18s, background-color .18s;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--accent-glow);
+}
+.btn:active { transform: translateY(1px); }
+.btn.alt {
+  background: var(--surface);
+  color: var(--fg);
+  border-color: var(--line);
+  box-shadow: none;
+}
+.btn.alt:hover { border-color: var(--accent); }
 
-    .badge {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--accent-cyan);
-      border: 1px solid var(--border-glass);
-      background: rgba(0, 240, 255, 0.08);
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      margin-bottom: 1.2rem;
-    }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
 
-    .hero h1 {
-      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
-      font-weight: 800;
-      line-height: 1.12;
-      margin-bottom: 1.2rem;
-      background: linear-gradient(135deg, #ffffff 30%, #00f0ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+/* Hero + Visor HUD */
+.hero { padding-top: 3.25rem; }
+.heroGrid { display: grid; gap: 2.5rem; align-items: center; }
+@media (min-width: 54rem) { .heroGrid { grid-template-columns: 1.2fr 1fr; } }
 
-    .hero p {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      max-width: 540px;
-      margin-bottom: 2rem;
-    }
+.hudCard {
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+  position: relative;
+  overflow: hidden;
+}
+.hudTop {
+  display: flex;
+  justify-content: space-between;
+  font-family: "JetBrains Mono", monospace;
+  font-size: .78rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: .75rem;
+  margin-bottom: 1rem;
+}
+.visual {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: .85rem;
+  background: radial-gradient(circle at center, var(--accent-glow), transparent 72%);
+  overflow: hidden;
+}
+.scanLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: scan 3.2s linear infinite;
+}
+@keyframes scan {
+  0% { top: 5%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 95%; opacity: 0; }
+}
+.ring {
+  position: absolute;
+  width: 11rem;
+  height: 11rem;
+  border: 2px solid var(--lamp);
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulso 3.2s ease-out infinite;
+}
+.ring:nth-child(2) { animation-delay: 1.05s; }
+.ring:nth-child(3) { animation-delay: 2.1s; }
+@keyframes pulso {
+  0% { transform: scale(.25); opacity: .9; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+.visual svg { position: relative; width: 72%; max-width: 15rem; height: auto; color: var(--fg); z-index: 2; }
+.hudSpecs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin-top: 1rem;
+  padding-top: .85rem;
+  border-top: 1px solid var(--line);
+  font-family: "JetBrains Mono", monospace;
+  font-size: .75rem;
+  text-align: center;
+}
+.hudSpecs strong { display: block; color: var(--fg); font-size: .9rem; }
+.hudSpecs span { color: var(--muted); }
 
-    .btn-group {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+/* Banda Simulador Interactivo */
+.band {
+  background: var(--band);
+  color: var(--bandfg);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.demoBox {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 180, 0, 0.28);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+.demoControls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  gap: .75rem;
+  margin: 1.25rem 0;
+}
+.band .btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 180, 0, 0.5);
+  color: var(--bandfg);
+  box-shadow: none;
+  justify-content: space-between;
+}
+.band .btn:hover {
+  border-color: var(--lamp);
+  background: rgba(255, 180, 0, 0.12);
+}
+.band .btn[aria-pressed="true"] {
+  background: var(--lamp);
+  border-color: var(--lamp);
+  color: #060B16;
+  box-shadow: 0 0 24px var(--lamp-glow);
+}
+.beepBadge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: .78rem;
+  padding: .15rem .5rem;
+  border-radius: .35rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--lamp);
+}
+.band .btn[aria-pressed="true"] .beepBadge {
+  background: #060B16;
+  color: var(--lamp);
+}
 
-    .btn-primary {
-      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
-      color: #04070d;
-      font-weight: 700;
-      padding: 0.9rem 1.8rem;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+.dots { display: flex; gap: .85rem; margin-top: 1.25rem; align-items: center; }
+.dots i {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 2px solid var(--lamp);
+  transition: background .1s, transform .1s, box-shadow .1s;
+}
+.dots i.on {
+  background: var(--lamp);
+  transform: scale(1.2);
+  box-shadow: 0 0 16px var(--lamp);
+}
+#aviso {
+  font-size: clamp(1.55rem, 4.5vw, 2.5rem);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--lamp);
+  min-height: 2.6em;
+  margin: 1.25rem 0 0;
+  transition: opacity .2s;
+}
+#aviso.cambia { opacity: .15; }
 
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.6);
-    }
+/* Tarjetas Grid (Arquitectura / Hardware / Métricas) */
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16.5rem, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+.glassCard {
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.6rem;
+  transition: transform .25s, border-color .25s;
+}
+.glassCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+.stepNum {
+  font-family: "JetBrains Mono", monospace;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: .5rem;
+  display: block;
+}
 
-    .btn-secondary {
-      background: transparent;
-      color: var(--text-main);
-      border: 1px solid var(--border-glass);
-      padding: 0.9rem 1.8rem;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.25s, border-color 0.25s;
-    }
+/* Badges de estado en tabla */
+.tabla {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: .5rem 1.25rem;
+  margin-top: 1.5rem;
+}
+table { border-collapse: collapse; width: 100%; min-width: 26rem; }
+th, td {
+  text-align: left;
+  padding: 1rem .75rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+th { font-weight: 700; color: var(--muted); font-size: .95rem; text-transform: uppercase; letter-spacing: .04em; }
 
-    .btn-secondary:hover {
-      background: rgba(0, 240, 255, 0.08);
-      border-color: var(--accent-cyan);
-    }
+.pill {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: .8rem;
+  font-weight: 700;
+  padding: .25rem .7rem;
+  border-radius: 999px;
+}
+.pill.ok { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.pill.warn { background: color-mix(in srgb, var(--lamp) 18%, transparent); color: var(--lamp); }
+.pill.dev { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
 
-    /* Simulador Interactivo Radar HUD */
-    .hud-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border-glass);
-      border-radius: 20px;
-      padding: 2rem;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      position: relative;
-    }
+/* Métricas YOLOv8 con barras visuales */
+.metricVal {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 2.35rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+  margin: .35rem 0 .65rem;
+}
+.barTrack {
+  width: 100%;
+  height: .55rem;
+  background: color-mix(in srgb, var(--fg) 12%, transparent);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: .85rem;
+}
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--lamp));
+  border-radius: 999px;
+}
 
-    .hud-header {
-      display: flex;
-      justify-content: space-between;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--accent-cyan);
-      margin-bottom: 1.5rem;
-    }
+/* Preventa y Formularios */
+.precioGrid { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
+@media (min-width: 52rem) { .precioGrid { grid-template-columns: 1fr 1.15fr; } }
 
-    .radar-box {
-      height: 220px;
-      border-radius: 14px;
-      background: radial-gradient(circle at center, rgba(0, 240, 255, 0.14), rgba(7, 11, 20, 0.9));
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
+.card {
+  background: var(--band);
+  color: var(--bandfg);
+  border: 1px solid rgba(0, 240, 255, 0.22);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .22);
+}
+.card .btn {
+  background: var(--lamp);
+  border-color: var(--lamp);
+  color: #060B16;
+  width: 100%;
+  box-shadow: 0 4px 20px var(--lamp-glow);
+}
+.card ul { padding-left: 1.2rem; margin: .75rem 0 1.25rem; color: #CBD5E1; }
+.card li { margin-bottom: .5rem; }
 
-    .scan-line {
-      position: absolute;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
-      animation: scan 3s linear infinite;
-    }
+.precio {
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(2.4rem, 7vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--lamp);
+  margin: .35rem 0 .6rem;
+}
 
-    @keyframes scan {
-      0% { top: 0%; }
-      100% { top: 100%; }
-    }
+.cant { display: flex; align-items: center; gap: 1rem; margin: .75rem 0 1.25rem; }
+.cant button {
+  width: 2.85rem;
+  height: 2.85rem;
+  font: inherit;
+  font-size: 1.45rem;
+  font-weight: 700;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.cant button:hover { background: var(--accent); color: #060B16; }
+.cant output { min-width: 2ch; font-family: "JetBrains Mono", monospace; font-size: 1.55rem; font-weight: 700; text-align: center; }
+#total { font-family: "JetBrains Mono", monospace; font-size: 1.45rem; font-weight: 700; color: var(--lamp); }
 
-    .distance-readout {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 2.6rem;
-      font-weight: 700;
-      color: #fff;
-    }
+.formGrid { display: grid; gap: 1rem; margin-top: 1rem; }
+.field { display: flex; flex-direction: column; gap: .35rem; }
+.field label { font-weight: 700; font-size: .98rem; }
+.field input, .field textarea {
+  font: inherit;
+  padding: .8rem .95rem;
+  border-radius: .55rem;
+  border: 1.5px solid rgba(148, 163, 184, 0.35);
+  background: rgba(6, 11, 22, 0.75);
+  color: #F8FAFC;
+  width: 100%;
+  transition: border-color .2s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--accent); }
 
-    .status-text {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--accent-cyan);
-      margin-top: 0.4rem;
-    }
+.statusMsg { margin-top: .85rem; font-weight: 700; min-height: 1.5em; }
+.statusMsg.ok { color: #4ADE80; }
+.statusMsg.err { color: #F87171; }
 
-    /* Tarjetas de Características */
-    .features {
-      padding: 5rem 6%;
-    }
+/* Acordeón FAQ */
+details {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: .85rem;
+  padding: 1.1rem 1.35rem;
+  margin-bottom: .85rem;
+  max-width: 46rem;
+}
+summary { font-weight: 700; cursor: pointer; }
+details p { margin: .85rem 0 0; color: var(--muted); }
 
-    .section-title {
-      text-align: center;
-      font-size: 2.2rem;
-      margin-bottom: 3rem;
-    }
+footer {
+  padding: 2.5rem 0 3.5rem;
+  color: var(--muted);
+  font-size: .98rem;
+  border-top: 1px solid var(--line);
+}
 
-    .grid-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-    }
+.js .rv { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+.js .rv.in { opacity: 1; transform: none; }
 
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-glass);
-      border-radius: 16px;
-      padding: 1.8rem;
-      transition: transform 0.3s, border-color 0.3s;
-    }
-
-    .card:hover {
-      transform: translateY(-6px);
-      border-color: var(--accent-cyan);
-    }
-
-    .card h3 {
-      color: var(--accent-cyan);
-      margin-bottom: 0.6rem;
-      font-size: 1.2rem;
-    }
-
-    .card p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: 860px) {
-      .hero { grid-template-columns: 1fr; text-align: center; }
-      .hero p { margin-inline: auto; }
-      .btn-group { justify-content: center; }
-      nav { display: none; }
-    }
-  </style>
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+@media (prefers-reduced-motion: reduce) {
+  #aviso, .btn, body { transition: none; }
+  .ring, .scanLine, .brandDot { animation: none; }
+  .ring { opacity: .3; transform: scale(.5); }
+  .js .rv { opacity: 1; transform: none; transition: none; }
+}
+</style>
 </head>
 <body>
-  <div class="tech-grid"></div>
-  <div class="glow-orb"></div>
 
-  <header>
-    <div class="logo">
-      <div class="pulse-dot"></div>
-      GUÍA<span>VISIÓN</span>
-    </div>
-    <nav>
-      <a href="#tecnologia">Tecnología</a>
-      <a href="#simulador">Simulador HUD</a>
-      <a href="#contacto">Contacto</a>
+<div class="techBg" aria-hidden="true"></div>
+<div class="ambientGlow" aria-hidden="true"></div>
+
+<a class="skip" href="#demo">Saltar a la prueba de sonido</a>
+
+<header>
+  <div class="wrap topBar">
+    <span class="brand"><span class="brandDot" aria-hidden="true"></span>GUÍA</span>
+    <nav class="navLinks" aria-label="Secciones principales">
+      <a href="#demo">Simulador</a>
+      <a href="#arquitectura">Tecnología</a>
+      <a href="#metricas">YOLOv8</a>
+      <a href="#precio">Preventa</a>
     </nav>
-  </header>
+    <div class="topControls">
+      <button type="button" class="chipBtn" id="toggleTema" aria-pressed="true">Modo claro</button>
+    </div>
+  </div>
+</header>
 
-  <section class="hero">
+<main id="contenido">
+
+<section class="hero">
+  <div class="wrap heroGrid">
     <div>
-      <span class="badge">// SISTEMA DE ASISTENCIA INTELIGENTE</span>
-      <h1>Autonomía visual impulsada por sensores y audio espacial.</h1>
-      <p>
-        Lentes inteligentes diseñados para detectar obstáculos en tiempo real y guiar cada paso mediante retroalimentación háptica y alertas sonoras de alta precisión.
-      </p>
-      <div class="btn-group">
-        <button class="btn-primary" onclick="simularAlerta()">Probar Alerta Sonora</button>
-        <button class="btn-secondary" onclick="document.getElementById('tecnologia').scrollIntoView()">Explorar Hardware</button>
+      <span class="tag">// VISIÓN ARTIFICIAL ASISTIVA</span>
+      <h1><span class="gradText">Lentes que te dicen qué hay en tu camino</span></h1>
+      <p class="lead">GUÍA integra una cámara ESP32-CAM y una red neuronal YOLOv8 para reconocer postes, baches y ramas, avisándote con patrones acústicos claros sin bloquear tus oídos.</p>
+      <p>Prototipo académico desarrollado para impulsar la autonomía de personas con discapacidad visual.</p>
+      <div class="btnGroup">
+        <a class="btn" href="#demo">Escuchar un aviso</a>
+        <a class="btn alt" href="#precio">Apartar prototipo</a>
       </div>
     </div>
 
-    <div class="hud-panel" id="simulador">
-      <div class="hud-header">
-        <span>SENSOR_LIDAR: ACTIVO</span>
-        <span>LATENCIA: 12ms</span>
+    <div class="hudCard" aria-hidden="true">
+      <div class="hudTop">
+        <span>ESP32-CAM // ONLINE</span>
+        <span>MODELO: YOLOv8</span>
       </div>
-      <div class="radar-box">
-        <div class="scan-line"></div>
-        <div class="distance-readout" id="distValue">1.45 m</div>
-        <div class="status-text" id="statusLabel">CAMINO DESPEJADO</div>
+      <div class="visual">
+        <div class="scanLine"></div>
+        <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+        <svg viewBox="0 0 200 90">
+          <g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="12" y="22" width="68" height="46" rx="16"/>
+            <rect x="120" y="22" width="68" height="46" rx="16"/>
+            <path d="M80 40q20-14 40 0M12 36L2 28M188 36l10-8"/>
+          </g>
+          <circle cx="100" cy="30" r="7" fill="#FFB400"/>
+        </svg>
       </div>
-    </div>
-  </section>
-
-  <section class="features" id="tecnologia">
-    <h2 class="section-title">Arquitectura Tecnológica</h2>
-    <div class="grid-cards">
-      <div class="card">
-        <h3>01 // Detección Ultrasónica</h3>
-        <p>Lectura continua del entorno frontal y lateral para identificar desniveles y objetos a distancia.</p>
-      </div>
-      <div class="card">
-        <h3>02 // Retroalimentación Sonora</h3>
-        <p>Frecuencia dinámica de audio que varía según la proximidad del obstáculo sin saturar el oído.</p>
-      </div>
-      <div class="card">
-        <h3>03 // Diseño Ergonómico</h3>
-        <p>Montura ligera con distribución equilibrada de batería para uso continuo durante toda la jornada.</p>
+      <div class="hudSpecs">
+        <div><strong>Gran Angular</strong><span>Óptica Frontal</span></div>
+        <div><strong>4 Patrones</strong><span>Alerta Buzzer</span></div>
+        <div><strong>Oído Libre</strong><span>Sin Audífonos</span></div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <script>
-    // Efecto de sonido sintetizado sin depender de archivos externos + simulación HUD
-    function simularAlerta() {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(680, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(980, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
+<section id="demo" class="band">
+  <div class="wrap">
+    <span class="tag" style="color:var(--lamp);border-color:rgba(255,180,0,.3)">// SIMULADOR ACÚSTICO EN VIVO</span>
+    <h2>Así suena un aviso</h2>
+    <p>Cada obstáculo tiene su propio patrón de pitidos. Elige uno para escucharlo. Si no oyes nada, sube el volumen: el texto e indicadores visuales aparecen igual.</p>
+    <div class="demoBox">
+      <div class="demoControls" role="group" aria-label="Simulador de alertas de obstáculos">
+        <button type="button" class="btn" data-n="1" data-msg="1 pitido: poste" aria-pressed="false">
+          <span>Poste</span><span class="beepBadge">1× BEEP</span>
+        </button>
+        <button type="button" class="btn" data-n="2" data-msg="2 pitidos: poste caído" aria-pressed="false">
+          <span>Poste caído</span><span class="beepBadge">2× BEEP</span>
+        </button>
+        <button type="button" class="btn" data-n="3" data-msg="3 pitidos: bache o banqueta rota" aria-pressed="false">
+          <span>Bache o banqueta</span><span class="beepBadge">3× BEEP</span>
+        </button>
+        <button type="button" class="btn" data-n="4" data-msg="4 pitidos: rama" aria-pressed="false">
+          <span>Rama</span><span class="beepBadge">4× BEEP</span>
+        </button>
+      </div>
+      <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <p id="aviso" role="status" aria-live="polite">Toca un botón para escuchar el aviso.</p>
+    </div>
+  </div>
+</section>
 
-      const distEl = document.getElementById('distValue');
-      const statusEl = document.getElementById('statusLabel');
-      const randomDist = (Math.random() * 1.8 + 0.35).toFixed(2);
-      distEl.textContent = `${randomDist} m`;
+<section id="arquitectura">
+  <div class="wrap">
+    <span class="tag">// FLUJO DE PROCESAMIENTO</span>
+    <h2>Cómo funciona</h2>
+    <p>La red neuronal aprendió viendo miles de fotografías etiquetadas de calles y banquetas, corrigiendo sus errores hasta identificar obstáculos nuevos en tiempo real.</p>
+    <div class="cardsGrid">
+      <div class="glassCard rv">
+        <span class="stepNum">01 // CAPTURA ÓPTICA</span>
+        <h3>Visión frontal continua</h3>
+        <p>La cámara ESP32-CAM montada en el puente de los lentes observa el camino frente al usuario con lente gran angular.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">02 // INFERENCIA IA</span>
+        <h3>Detección con YOLOv8</h3>
+        <p>Nuestra red neuronal analiza cada cuadro y clasifica el tipo de obstáculo urbano en fracciones de segundo.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">03 // ALERTA SONORA</span>
+        <h3>Codificación por pitidos</h3>
+        <p>Un mini buzzer emite 1 pitido para poste, 2 para poste caído, 3 para bache o banqueta rota y 4 para rama.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-      if (randomDist < 0.8) {
-        statusEl.textContent = '⚠ OBSTÁCULO PRÓXIMO DETECTADO';
-        statusEl.style.color = '#ff4d6d';
-      } else {
-        statusEl.textContent = '✔ TRAYECTORIA SEGURA';
-        statusEl.style.color = '#00f0ff';
-      }
+<section>
+  <div class="wrap">
+    <span class="tag">// MATRIZ DE DETECCIÓN</span>
+    <h2>Qué detecta hoy</h2>
+    <div class="tabla rv">
+      <table>
+        <thead><tr><th>Obstáculo</th><th>Patrón sonoro</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Poste</strong></td><td class="mono">1 pitido</td><td><span class="pill ok">Funciona en pruebas</span></td></tr>
+          <tr><td><strong>Poste caído o inclinado</strong></td><td class="mono">2 pitidos</td><td><span class="pill ok">Funciona en pruebas</span></td></tr>
+          <tr><td><strong>Bache o banqueta rota</strong></td><td class="mono">3 pitidos</td><td><span class="pill warn">En entrenamiento</span></td></tr>
+          <tr><td><strong>Rama de árbol</strong></td><td class="mono">4 pitidos</td><td><span class="pill dev">En desarrollo</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="metricas">
+  <div class="wrap">
+    <span class="tag">// TELEMETRÍA DEL MODELO</span>
+    <h2>Lo que hemos medido</h2>
+    <p>Probamos el modelo (YOLOv8) con fotos que nunca había visto. Estos son los resultados reales, sin redondear hacia arriba.</p>
+    <div class="cardsGrid">
+      <div class="glassCard rv">
+        <span class="stepNum">PRECISIÓN</span>
+        <div class="metricVal">0.85</div>
+        <div class="barTrack"><div class="barFill" style="width:85%"></div></div>
+        <p>Cuando avisa, casi siempre acierta en el obstáculo detectado.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">RECALL</span>
+        <div class="metricVal">0.53</div>
+        <div class="barTrack"><div class="barFill" style="width:53%"></div></div>
+        <p>Todavía se le escapa cerca de la mitad de los obstáculos en escena.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">mAP50</span>
+        <div class="metricVal">0.56</div>
+        <div class="barTrack"><div class="barFill" style="width:56%"></div></div>
+        <p>Medida general de qué tan bien los encuentra y los ubica espacialmente.</p>
+      </div>
+    </div>
+    <p style="margin-top:1.25rem">Por eso GUÍA es una ayuda extra, no un reemplazo del bastón. Seguimos ampliando el conjunto de fotos para mejorar estos números.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">// ESPECIFICACIONES DE HARDWARE</span>
+    <h2>Qué lleva</h2>
+    <div class="cardsGrid">
+      <div class="glassCard rv">
+        <span class="stepNum">ÓPTICA</span>
+        <h3>ESP32-CAM Gran Angular</h3>
+        <p>Integrada discretamente en la montura de los lentes para cubrir el ángulo frontal de marcha.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">ENERGÍA</span>
+        <h3>Power Bank de 5 V</h3>
+        <p>Se lleva en el bolsillo para mantener los lentes ligeros y evitar baterías junto a la cabeza.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">AUDIO ABIERTO</span>
+        <h3>Mini Buzzer Direccional</h3>
+        <p>Emite los patrones de alerta sin tapar los oídos, permitiendo seguir escuchando el entorno de la calle.</p>
+      </div>
+    </div>
+    <p style="margin-top:1.25rem">Hoy el procesamiento corre en una laptop. El siguiente paso es llevar todo a un dispositivo portátil.</p>
+  </div>
+</section>
+
+<section id="precio">
+  <div class="wrap">
+    <span class="tag">// RESERVA DE PROTOTIPO</span>
+    <h2>Precio de preventa</h2>
+    <div class="precioGrid">
+      <div class="card rv">
+        <p style="margin:0;color:#94A3B8">Cada unidad</p>
+        <p class="precio">$1,449 MXN</p>
+        <p>Precio estimado de preventa. Puede cambiar antes de la entrega.</p>
+        <ul>
+          <li>Lentes con cámara ESP32-CAM gran angular</li>
+          <li>Power bank de 5 V y cables</li>
+          <li>Mini buzzer con 4 patrones de pitidos</li>
+          <li>Carcasa impresa en 3D</li>
+        </ul>
+        <p style="color:#94A3B8;font-size:.98rem">En esta versión de prueba, el procesamiento corre en tu laptop.</p>
+      </div>
+
+      <div class="card rv">
+        <h3>Aparta tu unidad</h3>
+        <div class="cant">
+          <button type="button" id="menos" aria-label="Quitar una unidad">−</button>
+          <output id="cant" aria-live="polite">1</output>
+          <button type="button" id="mas" aria-label="Agregar una unidad">+</button>
+          <span>Total: <strong id="total">$1,449 MXN</strong></span>
+        </div>
+
+        <form id="formPedido" class="formGrid" novalidate>
+          <div class="field">
+            <label for="pedNombre">Nombre completo</label>
+            <input type="text" id="pedNombre" name="nombre" required autocomplete="name" placeholder="Ej. María López">
+          </div>
+          <div class="field">
+            <label for="pedContacto">Correo electrónico o WhatsApp</label>
+            <input type="text" id="pedContacto" name="contacto" required autocomplete="email" placeholder="correo@ejemplo.com o 33 1234 5678">
+          </div>
+          <div class="field">
+            <label for="pedNota">Notas adicionales (opcional)</label>
+            <input type="text" id="pedNota" name="nota" placeholder="Ej. Ciudad, uso personal o institución">
+          </div>
+          <button type="submit" class="btn">Registrar apartado</button>
+          <p id="pedStatus" class="statusMsg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">// SOPORTE Y DUDAS</span>
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿Reemplaza al bastón o al perro guía?</summary><p>No. Es un complemento que avisa de obstáculos; no garantiza detectarlos todos.</p></details>
+    <details><summary>¿Funciona de noche?</summary><p>Todavía no lo hemos probado con poca luz. La cámara necesita buena iluminación para reconocer bien.</p></details>
+    <details><summary>¿Cuánto cuesta?</summary><p>El precio de preventa estimado es de $1,449 MXN por unidad. Es un prototipo y puede cambiar antes de la entrega.</p></details>
+  </div>
+</section>
+
+<section id="contacto" class="band">
+  <div class="wrap">
+    <span class="tag" style="color:var(--lamp);border-color:rgba(255,180,0,.3)">// COLABORACIÓN ABIERTA</span>
+    <h2>Quiero saber más o colaborar</h2>
+    <p>Si quieres probar el prototipo, dar opinión o colaborar en el entrenamiento de datos, déjanos tus datos.</p>
+    <form id="formContacto" class="formGrid" style="max-width:34rem" novalidate>
+      <div class="field">
+        <label for="conNombre">Tu nombre</label>
+        <input type="text" id="conNombre" name="nombre" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="conCorreo">Tu correo o teléfono</label>
+        <input type="text" id="conCorreo" name="contacto" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="conMensaje">¿Cómo te gustaría participar?</label>
+        <textarea id="conMensaje" name="mensaje" rows="3" required placeholder="Quiero probar el prototipo, aportar fotos de obstáculos, etc."></textarea>
+      </div>
+      <div>
+        <button type="submit" class="btn" style="background:var(--lamp);border-color:var(--lamp);color:#060B16">Enviar mensaje</button>
+      </div>
+      <p id="conStatus" class="statusMsg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+<footer>
+  <div class="wrap">Proyecto académico de Ingeniería en Computación, UTEG.</div>
+</footer>
+
+<!-- SDK de Supabase con defer para no bloquear la carga offline -->
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  /* =========================================================
+     1. CONFIGURACIÓN DE SUPABASE (Tus llaves ya conectadas)
+     ========================================================= */
+  var SUPABASE_URL = 'https://zmyhgholzaibnplitnmw.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_sKsn_fhpFYB6UNpQo9jzEw_MArluelc';
+  function getDB() {
+    if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+      return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
-  </script>
+    return null;
+  }
+
+  /* =========================================================
+     2. TEMA CLARO / OSCURO
+     ========================================================= */
+  var root = document.documentElement;
+  var btnTema = document.getElementById('toggleTema');
+
+  function actualizarBtnTema() {
+    var esOscuro = root.getAttribute('data-theme') === 'dark';
+    btnTema.setAttribute('aria-pressed', esOscuro ? 'true' : 'false');
+    btnTema.textContent = esOscuro ? 'Modo claro' : 'Modo oscuro';
+  }
+  actualizarBtnTema();
+
+  btnTema.addEventListener('click', function() {
+    var esOscuro = btnTema.getAttribute('aria-pressed') === 'true';
+    var nuevo = esOscuro ? 'light' : 'dark';
+    root.setAttribute('data-theme', nuevo);
+    try { localStorage.setItem('guia-theme', nuevo); } catch(e) {}
+    actualizarBtnTema();
+  });
+
+  /* =========================================================
+     3. SIMULADOR DE PITIDOS (SOLO BUZZER)
+     ========================================================= */
+  var aviso = document.getElementById('aviso');
+  var ctx = null;
+  var timersPitidos = [];
+  var dots = document.querySelectorAll('.dots i');
+  var demoBtns = document.querySelectorAll('.demoControls button[data-msg]');
+
+  function pitar(k, freq) {
+    freq = freq || 2000;
+    try {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!ctx) ctx = new AudioCtx();
+
+      timersPitidos.forEach(function(id) { clearTimeout(id); });
+      timersPitidos = [];
+      dots.forEach(function(d) { d.classList.remove('on'); });
+
+      var lanzar = function() {
+        var base = ctx.currentTime + 0.03;
+        for (var i = 0; i < k; i++) {
+          (function(idx) {
+            var t0 = base + idx * 0.32;
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.type = 'square';
+            o.frequency.setValueAtTime(freq, t0);
+
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.linearRampToValueAtTime(0.18, t0 + 0.015);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.start(t0);
+            o.stop(t0 + 0.2);
+
+            var tid = setTimeout(function() {
+              if (dots[idx]) dots[idx].classList.add('on');
+            }, idx * 320 + 30);
+            timersPitidos.push(tid);
+          })(i);
+        }
+      };
+
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(lanzar);
+      } else {
+        lanzar();
+      }
+    } catch (e) {}
+  }
+
+  demoBtns.forEach(function(b) {
+    b.addEventListener('click', function() {
+      demoBtns.forEach(function(btn) { btn.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+
+      var t = b.getAttribute('data-msg');
+      var k = parseInt(b.getAttribute('data-n'), 10);
+
+      aviso.classList.add('cambia');
+      setTimeout(function() {
+        aviso.textContent = t;
+        aviso.classList.remove('cambia');
+      }, 140);
+
+      pitar(k, 2000);
+    });
+  });
+
+  /* =========================================================
+     4. ANIMACIONES DE ENTRADA
+     ========================================================= */
+  var rv = document.querySelectorAll('.rv');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(es) {
+      es.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: .15 });
+    rv.forEach(function(el) { io.observe(el); });
+  } else {
+    rv.forEach(function(el) { el.classList.add('in'); });
+  }
+
+  /* =========================================================
+     5. CALCULADORA DE UNIDADES Y FORMULARIOS (SUPABASE)
+     ========================================================= */
+  var n = 1, P = 1449;
+  var cant = document.getElementById('cant'), tot = document.getElementById('total');
+  function fmt(x) { return '$' + x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' MXN'; }
+  function act() {
+    cant.textContent = n;
+    tot.textContent = fmt(n * P);
+  }
+  document.getElementById('mas').addEventListener('click', function() { if (n < 10) { n++; act(); } });
+  document.getElementById('menos').addEventListener('click', function() { if (n > 1) { n--; act(); } });
+  act();
+
+  // Envío de apartado a tabla 'apartados' en Supabase
+  var formPedido = document.getElementById('formPedido');
+  var pedStatus = document.getElementById('pedStatus');
+  formPedido.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var nombre = document.getElementById('pedNombre').value.trim();
+    var contacto = document.getElementById('pedContacto').value.trim();
+    var nota = document.getElementById('pedNota').value.trim();
+
+    if (!nombre || !contacto) {
+      pedStatus.className = 'statusMsg err';
+      pedStatus.textContent = 'Por favor escribe tu nombre y un medio de contacto.';
+      return;
+    }
+
+    var registro = {
+      nombre: nombre,
+      contacto: contacto,
+      unidades: n,
+      total_mxn: n * P,
+      nota: nota
+    };
+
+    pedStatus.className = 'statusMsg';
+    pedStatus.textContent = 'Guardando apartado...';
+
+    var db = getDB();
+    if (db) {
+      var res = await db.from('apartados').insert([registro]);
+      if (res.error) {
+        pedStatus.className = 'statusMsg err';
+        pedStatus.textContent = 'Error al guardar: ' + res.error.message;
+        return;
+      }
+    } else {
+      var guardados = JSON.parse(localStorage.getItem('guia_apartados') || '[]');
+      guardados.push(Object.assign({ fecha: new Date().toISOString() }, registro));
+      localStorage.setItem('guia_apartados', JSON.stringify(guardados));
+    }
+
+    pitar(2, 1200);
+    pedStatus.className = 'statusMsg ok';
+    pedStatus.textContent = '¡Apartado registrado para ' + nombre + ' (' + n + (n === 1 ? ' unidad' : ' unidades') + ')!';
+    formPedido.reset();
+    n = 1;
+    act();
+  });
+
+  // Envío de contacto / voluntarios a tabla 'mensajes' en Supabase
+  var formContacto = document.getElementById('formContacto');
+  var conStatus = document.getElementById('conStatus');
+  formContacto.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var nombre = document.getElementById('conNombre').value.trim();
+    var contacto = document.getElementById('conCorreo').value.trim();
+    var mensaje = document.getElementById('conMensaje').value.trim();
+
+    if (!nombre || !contacto || !mensaje) {
+      conStatus.className = 'statusMsg err';
+      conStatus.textContent = 'Completa todos los campos para enviar tu mensaje.';
+      return;
+    }
+
+    var registro = { nombre: nombre, contacto: contacto, mensaje: mensaje };
+    conStatus.className = 'statusMsg';
+    conStatus.textContent = 'Enviando mensaje...';
+
+    var db = getDB();
+    if (db) {
+      var res = await db.from('mensajes').insert([registro]);
+      if (res.error) {
+        conStatus.className = 'statusMsg err';
+        conStatus.textContent = 'Error al enviar: ' + res.error.message;
+        return;
+      }
+    } else {
+      var msgs = JSON.parse(localStorage.getItem('guia_mensajes') || '[]');
+      msgs.push(Object.assign({ fecha: new Date().toISOString() }, registro));
+      localStorage.setItem('guia_mensajes', JSON.stringify(msgs));
+    }
+
+    pitar(2, 1200);
+    conStatus.className = 'statusMsg ok';
+    conStatus.textContent = '¡Gracias, ' + nombre + '! Recibimos tu mensaje correctamente.';
+    formContacto.reset();
+  });
+})();
+</script>
 </body>
 </html>

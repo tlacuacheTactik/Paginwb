@@ -567,6 +567,10 @@ th { font-weight: 700; color: var(--muted); font-size: .95rem; text-transform: u
 }
 .field input:focus, .field textarea:focus { border-color: var(--accent); }
 
+.trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.chk { display: flex; gap: .6rem; align-items: center; font-weight: 400; cursor: pointer; }
+.chk input { width: 1.3rem; height: 1.3rem; margin: 0; flex: none; }
+.priv { font-size: .92rem; color: #94A3B8; margin: 0; max-width: 34rem; }
 .statusMsg { margin-top: .85rem; font-weight: 700; min-height: 1.5em; }
 .statusMsg.ok { color: #4ADE80; }
 .statusMsg.err { color: #F87171; }
@@ -818,16 +822,24 @@ footer {
         <form id="formPedido" class="formGrid" novalidate>
           <div class="field">
             <label for="pedNombre">Nombre completo</label>
-            <input type="text" id="pedNombre" name="nombre" required autocomplete="name" placeholder="Ej. María López">
+            <input type="text" id="pedNombre" name="nombre" required maxlength="100" autocomplete="name" placeholder="Ej. María López">
           </div>
           <div class="field">
             <label for="pedContacto">Correo electrónico o WhatsApp</label>
-            <input type="text" id="pedContacto" name="contacto" required autocomplete="email" placeholder="correo@ejemplo.com o 33 1234 5678">
+            <input type="text" id="pedContacto" name="contacto" required maxlength="120" autocomplete="email" placeholder="correo@ejemplo.com o 33 1234 5678">
           </div>
           <div class="field">
             <label for="pedNota">Notas adicionales (opcional)</label>
-            <input type="text" id="pedNota" name="nota" placeholder="Ej. Ciudad, uso personal o institución">
+            <input type="text" id="pedNota" name="nota" maxlength="200" placeholder="Ej. Ciudad, uso personal o institución">
           </div>
+          <div class="trampa" aria-hidden="true">
+            <label for="pedWeb">No llenar este campo</label>
+            <input type="text" id="pedWeb" name="sitio_web" tabindex="-1" autocomplete="off">
+          </div>
+          <div>
+            <label class="chk"><input type="checkbox" id="pedAcepto"> He leído el aviso de privacidad.</label>
+          </div>
+          <p class="priv">Es una preventa <strong>sin pago</strong>: no te cobramos nada ahora. Usamos tu nombre y tu contacto solo para confirmar tu apartado y avisarte sobre GUÍA. No los compartimos con nadie. Para que los borremos, escríbenos desde el formulario de contacto.</p>
           <button type="submit" class="btn">Registrar apartado</button>
           <p id="pedStatus" class="statusMsg" role="status" aria-live="polite"></p>
         </form>
@@ -854,16 +866,24 @@ footer {
     <form id="formContacto" class="formGrid" style="max-width:34rem" novalidate>
       <div class="field">
         <label for="conNombre">Tu nombre</label>
-        <input type="text" id="conNombre" name="nombre" required autocomplete="name">
+        <input type="text" id="conNombre" name="nombre" required maxlength="100" autocomplete="name">
       </div>
       <div class="field">
         <label for="conCorreo">Tu correo o teléfono</label>
-        <input type="text" id="conCorreo" name="contacto" required autocomplete="email">
+        <input type="text" id="conCorreo" name="contacto" required maxlength="120" autocomplete="email">
       </div>
       <div class="field">
         <label for="conMensaje">¿Cómo te gustaría participar?</label>
-        <textarea id="conMensaje" name="mensaje" rows="3" required placeholder="Quiero probar el prototipo, aportar fotos de obstáculos, etc."></textarea>
+        <textarea id="conMensaje" name="mensaje" rows="3" required maxlength="1000" placeholder="Quiero probar el prototipo, aportar fotos de obstáculos, etc."></textarea>
       </div>
+      <div class="trampa" aria-hidden="true">
+        <label for="conWeb">No llenar este campo</label>
+        <input type="text" id="conWeb" name="sitio_web" tabindex="-1" autocomplete="off">
+      </div>
+      <div>
+        <label class="chk"><input type="checkbox" id="conAcepto"> He leído el aviso de privacidad.</label>
+      </div>
+      <p class="priv">Usamos tu nombre, tu contacto y tu mensaje solo para responderte y para organizar la colaboración en GUÍA. No los compartimos con nadie. Para que los borremos, escríbenos por este mismo formulario.</p>
       <div>
         <button type="submit" class="btn" style="background:var(--lamp);border-color:var(--lamp);color:#060B16">Enviar mensaje</button>
       </div>
@@ -1019,90 +1039,138 @@ footer {
   document.getElementById('menos').addEventListener('click', function() { if (n > 1) { n--; act(); } });
   act();
 
-  // Envío de apartado a tabla 'apartados' en Supabase
+  /* =========================================================
+     ENVÍO SEGURO A SUPABASE (validación, anti-spam, sin datos locales)
+     ========================================================= */
+  var T0 = Date.now();
+  var reContacto = /^(?:[^@\s]+@[^@\s]+\.[^@\s]+|[+()\d\s-]{8,20})$/;
+  var MSG_ERR = 'No pudimos guardarlo en este momento. Inténtalo de nuevo en unos minutos.';
+
+  async function guardar(tabla, registro) {
+    var db = getDB();
+    if (!db) return false;
+    try {
+      var res = await db.from(tabla).insert([registro]);
+      return !res.error;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function estado(el, clase, texto) {
+    el.className = 'statusMsg' + (clase ? ' ' + clase : '');
+    el.textContent = texto;
+  }
+
+  // Apartado de preventa -> tabla 'apartados'
   var formPedido = document.getElementById('formPedido');
   var pedStatus = document.getElementById('pedStatus');
   formPedido.addEventListener('submit', async function(e) {
     e.preventDefault();
-    var nombre = document.getElementById('pedNombre').value.trim();
-    var contacto = document.getElementById('pedContacto').value.trim();
-    var nota = document.getElementById('pedNota').value.trim();
 
-    if (!nombre || !contacto) {
-      pedStatus.className = 'statusMsg err';
-      pedStatus.textContent = 'Por favor escribe tu nombre y un medio de contacto.';
+    if (document.getElementById('pedWeb').value) {          // campo trampa: bot
+      estado(pedStatus, 'ok', '¡Listo! Recibimos tu solicitud.');
+      formPedido.reset();
       return;
     }
 
-    var registro = {
+    var nombre = document.getElementById('pedNombre').value.trim();
+    var contacto = document.getElementById('pedContacto').value.trim();
+    var nota = document.getElementById('pedNota').value.trim().slice(0, 200);
+
+    if (nombre.length < 2 || nombre.length > 100) {
+      estado(pedStatus, 'err', 'Escribe tu nombre completo.');
+      return;
+    }
+    if (contacto.length > 120 || !reContacto.test(contacto)) {
+      estado(pedStatus, 'err', 'Escribe un correo válido o un número de WhatsApp.');
+      return;
+    }
+    if (!document.getElementById('pedAcepto').checked) {
+      estado(pedStatus, 'err', 'Marca que leíste el aviso de privacidad.');
+      return;
+    }
+    if (Date.now() - T0 < 3000) {
+      estado(pedStatus, 'err', 'Un momento, inténtalo de nuevo.');
+      return;
+    }
+
+    var btn = formPedido.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    estado(pedStatus, '', 'Guardando apartado...');
+
+    var ok = await guardar('apartados', {
       nombre: nombre,
       contacto: contacto,
       unidades: n,
       total_mxn: n * P,
       nota: nota
-    };
+    });
+    btn.disabled = false;
 
-    pedStatus.className = 'statusMsg';
-    pedStatus.textContent = 'Guardando apartado...';
-
-    var db = getDB();
-    if (db) {
-      var res = await db.from('apartados').insert([registro]);
-      if (res.error) {
-        pedStatus.className = 'statusMsg err';
-        pedStatus.textContent = 'Error al guardar: ' + res.error.message;
-        return;
-      }
-    } else {
-      var guardados = JSON.parse(localStorage.getItem('guia_apartados') || '[]');
-      guardados.push(Object.assign({ fecha: new Date().toISOString() }, registro));
-      localStorage.setItem('guia_apartados', JSON.stringify(guardados));
+    if (!ok) {
+      estado(pedStatus, 'err', MSG_ERR);
+      return;
     }
 
     pitar(2, 1200);
-    pedStatus.className = 'statusMsg ok';
-    pedStatus.textContent = '¡Apartado registrado para ' + nombre + ' (' + n + (n === 1 ? ' unidad' : ' unidades') + ')!';
+    estado(pedStatus, 'ok', '¡Apartado registrado, ' + nombre + '! Es una preventa sin pago; te contactaremos para confirmar.');
     formPedido.reset();
     n = 1;
     act();
   });
 
-  // Envío de contacto / voluntarios a tabla 'mensajes' en Supabase
+  // Contacto / colaboración -> tabla 'mensajes'
   var formContacto = document.getElementById('formContacto');
   var conStatus = document.getElementById('conStatus');
   formContacto.addEventListener('submit', async function(e) {
     e.preventDefault();
+
+    if (document.getElementById('conWeb').value) {          // campo trampa: bot
+      estado(conStatus, 'ok', '¡Gracias! Recibimos tu mensaje.');
+      formContacto.reset();
+      return;
+    }
+
     var nombre = document.getElementById('conNombre').value.trim();
     var contacto = document.getElementById('conCorreo').value.trim();
     var mensaje = document.getElementById('conMensaje').value.trim();
 
-    if (!nombre || !contacto || !mensaje) {
-      conStatus.className = 'statusMsg err';
-      conStatus.textContent = 'Completa todos los campos para enviar tu mensaje.';
+    if (nombre.length < 2 || nombre.length > 100) {
+      estado(conStatus, 'err', 'Escribe tu nombre.');
+      return;
+    }
+    if (contacto.length > 120 || !reContacto.test(contacto)) {
+      estado(conStatus, 'err', 'Escribe un correo válido o un número de teléfono.');
+      return;
+    }
+    if (mensaje.length < 5 || mensaje.length > 1000) {
+      estado(conStatus, 'err', 'Escribe un mensaje de entre 5 y 1000 caracteres.');
+      return;
+    }
+    if (!document.getElementById('conAcepto').checked) {
+      estado(conStatus, 'err', 'Marca que leíste el aviso de privacidad.');
+      return;
+    }
+    if (Date.now() - T0 < 3000) {
+      estado(conStatus, 'err', 'Un momento, inténtalo de nuevo.');
       return;
     }
 
-    var registro = { nombre: nombre, contacto: contacto, mensaje: mensaje };
-    conStatus.className = 'statusMsg';
-    conStatus.textContent = 'Enviando mensaje...';
+    var btn = formContacto.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    estado(conStatus, '', 'Enviando mensaje...');
 
-    var db = getDB();
-    if (db) {
-      var res = await db.from('mensajes').insert([registro]);
-      if (res.error) {
-        conStatus.className = 'statusMsg err';
-        conStatus.textContent = 'Error al enviar: ' + res.error.message;
-        return;
-      }
-    } else {
-      var msgs = JSON.parse(localStorage.getItem('guia_mensajes') || '[]');
-      msgs.push(Object.assign({ fecha: new Date().toISOString() }, registro));
-      localStorage.setItem('guia_mensajes', JSON.stringify(msgs));
+    var ok = await guardar('mensajes', { nombre: nombre, contacto: contacto, mensaje: mensaje });
+    btn.disabled = false;
+
+    if (!ok) {
+      estado(conStatus, 'err', MSG_ERR);
+      return;
     }
 
     pitar(2, 1200);
-    conStatus.className = 'statusMsg ok';
-    conStatus.textContent = '¡Gracias, ' + nombre + '! Recibimos tu mensaje correctamente.';
+    estado(conStatus, 'ok', '¡Gracias, ' + nombre + '! Recibimos tu mensaje.');
     formContacto.reset();
   });
 })();

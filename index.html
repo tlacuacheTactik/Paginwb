@@ -29,14 +29,15 @@
   --bg: #F1F5F9;
   --fg: #09111E;
   --muted: #475569;
-  --surface: rgba(255, 255, 255, 0.85);
+  --surface: rgba(255, 255, 255, 0.88);
   --surface-solid: #FFFFFF;
   --band: #0B1324;
   --bandfg: #F8FAFC;
   --accent: #0284C7;
   --accent-glow: rgba(2, 132, 199, 0.25);
-  --lamp: #F59E0B;
-  --lamp-glow: rgba(245, 158, 11, 0.35);
+  --lamp: #B45309;
+  --lamp-bright: #FFB400;
+  --lamp-glow: rgba(180, 83, 9, 0.3);
   --line: rgba(15, 23, 42, 0.14);
   --grid-color: rgba(2, 132, 199, 0.06);
   --focus: #0284C7;
@@ -58,6 +59,7 @@
   --accent: #00F0FF;
   --accent-glow: rgba(0, 240, 255, 0.28);
   --lamp: #FFB400;
+  --lamp-bright: #FFB400;
   --lamp-glow: rgba(255, 180, 0, 0.35);
   --line: rgba(0, 240, 255, 0.18);
   --grid-color: rgba(0, 240, 255, 0.045);
@@ -80,7 +82,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Fondo tecnológico sutil */
 .techBg {
   position: fixed;
   inset: 0;
@@ -105,13 +106,12 @@ body {
 .wrap { max-width: 66rem; margin: 0 auto; padding: 0 1.35rem; }
 .mono { font-family: "JetBrains Mono", monospace; }
 
-/* Skip link accesible */
 .skip {
   position: absolute;
   left: -9999px;
   top: .75rem;
   z-index: 100;
-  background: var(--lamp);
+  background: var(--lamp-bright);
   color: #060B16;
   font-weight: 700;
   padding: .75rem 1.25rem;
@@ -120,7 +120,6 @@ body {
 }
 .skip:focus { left: 1rem; }
 
-/* Header Glassmorphism */
 header {
   position: sticky;
   top: 0;
@@ -229,7 +228,6 @@ h3 { font-size: 1.3rem; margin: 0 0 .65rem; }
 p { margin: 0 0 1rem; max-width: 44rem; }
 .lead { font-size: 1.25rem; color: var(--muted); }
 
-/* Botones principales */
 .btnGroup { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
 .btn {
   display: inline-flex;
@@ -266,7 +264,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   outline-offset: 3px;
 }
 
-/* Hero + Visor HUD */
 .hero { padding-top: 3.25rem; }
 .heroGrid { display: grid; gap: 2.5rem; align-items: center; }
 @media (min-width: 54rem) { .heroGrid { grid-template-columns: 1.2fr 1fr; } }
@@ -321,7 +318,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   position: absolute;
   width: 11rem;
   height: 11rem;
-  border: 2px solid var(--lamp);
+  border: 2px solid var(--lamp-bright);
   border-radius: 50%;
   opacity: 0;
   animation: pulso 3.2s ease-out infinite;
@@ -354,6 +351,30 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
+.demoHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.voiceToggle {
+  font-family: "JetBrains Mono", monospace;
+  font-size: .82rem;
+  font-weight: 700;
+  padding: .45rem .95rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 180, 0, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--bandfg);
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.voiceToggle[aria-pressed="true"] {
+  background: rgba(255, 180, 0, 0.2);
+  border-color: var(--lamp-bright);
+  color: var(--lamp-bright);
+}
 .demoBox {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 180, 0, 0.28);
@@ -375,14 +396,14 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   justify-content: space-between;
 }
 .band .btn:hover {
-  border-color: var(--lamp);
+  border-color: var(--lamp-bright);
   background: rgba(255, 180, 0, 0.12);
 }
 .band .btn[aria-pressed="true"] {
-  background: var(--lamp);
-  border-color: var(--lamp);
+  background: var(--lamp-bright);
+  border-color: var(--lamp-bright);
   color: #060B16;
-  box-shadow: 0 0 24px var(--lamp-glow);
+  box-shadow: 0 0 24px rgba(255, 180, 0, 0.35);
 }
 .beepBadge {
   font-family: "JetBrains Mono", monospace;
@@ -390,11 +411,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   padding: .15rem .5rem;
   border-radius: .35rem;
   background: rgba(0, 0, 0, 0.35);
-  color: var(--lamp);
+  color: var(--lamp-bright);
 }
 .band .btn[aria-pressed="true"] .beepBadge {
   background: #060B16;
-  color: var(--lamp);
+  color: var(--lamp-bright);
 }
 
 .dots { display: flex; gap: .85rem; margin-top: 1.25rem; align-items: center; }
@@ -402,26 +423,28 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   width: 1.25rem;
   height: 1.25rem;
   border-radius: 50%;
-  border: 2px solid var(--lamp);
-  transition: background .1s, transform .1s, box-shadow .1s;
+  border: 2px solid var(--lamp-bright);
+  background: transparent;
+  transition: background .08s, transform .08s, box-shadow .08s;
 }
 .dots i.on {
-  background: var(--lamp);
-  transform: scale(1.2);
-  box-shadow: 0 0 16px var(--lamp);
+  background: var(--lamp-bright);
+  transform: scale(1.25);
+  box-shadow: 0 0 18px var(--lamp-bright);
 }
 #aviso {
-  font-size: clamp(1.45rem, 4vw, 2.25rem);
-  line-height: 1.2;
+  font-size: clamp(1.35rem, 4vw, 2.15rem);
+  line-height: 1.25;
   font-weight: 700;
-  color: var(--lamp);
-  min-height: 2.5em;
-  margin: 1.25rem 0 0;
+  color: var(--lamp-bright);
+  min-height: 3.4em;
+  display: flex;
+  align-items: center;
+  margin: 1rem 0 0;
   transition: opacity .2s;
 }
 #aviso.cambia { opacity: .15; }
 
-/* Tarjetas Grid (Arquitectura / Hardware / Métricas) */
 .cardsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16.5rem, 1fr));
@@ -450,7 +473,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   display: block;
 }
 
-/* Badges de estado en tabla */
 .tabla {
   overflow-x: auto;
   background: var(--surface);
@@ -478,10 +500,9 @@ th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: u
   border-radius: 999px;
 }
 .pill.ok { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
-.pill.warn { background: color-mix(in srgb, var(--lamp) 18%, transparent); color: var(--lamp); }
+.pill.warn { background: color-mix(in srgb, var(--lamp) 16%, transparent); color: var(--lamp); }
 .pill.dev { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
 
-/* Métricas YOLOv8 con barras visuales */
 .metricVal {
   font-family: "JetBrains Mono", monospace;
   font-size: 2.35rem;
@@ -500,8 +521,13 @@ th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: u
 }
 .barFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--lamp));
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--lamp-bright));
   border-radius: 999px;
+  transition: width 1.1s cubic-bezier(.22, 1, .36, 1);
+}
+.rv.in .barFill {
+  width: var(--target-w, 0%);
 }
 .classChips {
   display: flex;
@@ -519,7 +545,6 @@ th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: u
 }
 .classChip strong { color: var(--accent); }
 
-/* Preventa y Formularios */
 .precioGrid { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
 @media (min-width: 52rem) { .precioGrid { grid-template-columns: 1fr 1.15fr; } }
 
@@ -532,11 +557,11 @@ th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: u
   box-shadow: 0 18px 40px rgba(0, 0, 0, .22);
 }
 .card .btn {
-  background: var(--lamp);
-  border-color: var(--lamp);
+  background: var(--lamp-bright);
+  border-color: var(--lamp-bright);
   color: #060B16;
   width: 100%;
-  box-shadow: 0 4px 20px var(--lamp-glow);
+  box-shadow: 0 4px 20px rgba(255, 180, 0, 0.35);
 }
 .card ul { padding-left: 1.2rem; margin: .75rem 0 1.25rem; color: #CBD5E1; }
 .card li { margin-bottom: .5rem; }
@@ -546,7 +571,7 @@ th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: u
   font-size: clamp(2.4rem, 7vw, 3.5rem);
   font-weight: 700;
   line-height: 1.05;
-  color: var(--lamp);
+  color: var(--lamp-bright);
   margin: .35rem 0 .6rem;
 }
 
@@ -566,7 +591,7 @@ th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: u
 }
 .cant button:hover { background: var(--accent); color: #060B16; }
 .cant output { min-width: 2ch; font-family: "JetBrains Mono", monospace; font-size: 1.55rem; font-weight: 700; text-align: center; }
-#total { font-family: "JetBrains Mono", monospace; font-size: 1.45rem; font-weight: 700; color: var(--lamp); }
+#total { font-family: "JetBrains Mono", monospace; font-size: 1.45rem; font-weight: 700; color: var(--lamp-bright); }
 
 .formGrid { display: grid; gap: 1rem; margin-top: 1rem; }
 .field { display: flex; flex-direction: column; gap: .35rem; }
@@ -591,7 +616,6 @@ th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: u
 .statusMsg.ok { color: #4ADE80; }
 .statusMsg.err { color: #F87171; }
 
-/* Acordeón FAQ */
 details {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -615,10 +639,11 @@ footer {
 
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 @media (prefers-reduced-motion: reduce) {
-  #aviso, .btn, body { transition: none; }
+  #aviso, .btn, body, .barFill { transition: none; }
   .ring, .scanLine, .brandDot { animation: none; }
   .ring { opacity: .3; transform: scale(.5); }
   .js .rv { opacity: 1; transform: none; transition: none; }
+  .barFill { width: var(--target-w, 0%); }
 }
 </style>
 </head>
@@ -687,24 +712,27 @@ footer {
 
 <section id="demo" class="band">
   <div class="wrap">
-    <span class="tag" style="color:var(--lamp);border-color:rgba(255,180,0,.3)">// SIMULADOR ACÚSTICO EN VIVO</span>
-    <h2>Así suena un aviso</h2>
-    <p>Cada obstáculo tiene su propio patrón de pitidos y ubicación espacial (izquierda, centro o derecha). Elige una categoría para escucharla:</p>
+    <div class="demoHeader">
+      <span class="tag" style="color:var(--lamp-bright);border-color:rgba(255,180,0,.3);margin-bottom:0">// SIMULADOR ACÚSTICO EN VIVO</span>
+      <button type="button" class="voiceToggle" id="toggleVoz" aria-pressed="true">Voz guía: Activada</button>
+    </div>
+    <h2 style="margin-top:1rem">Así suena un aviso</h2>
+    <p>Cada obstáculo tiene su propio patrón de pitidos y ubicación espacial (izquierda, centro o derecha). Elige una categoría para escucharlo:</p>
     <div class="demoBox">
       <div class="demoControls" role="group" aria-label="Simulador de alertas de obstáculos">
-        <button type="button" class="btn" data-n="1" data-freq="2000" data-msg="1 pitido: poste detectado en el camino" aria-pressed="false">
+        <button type="button" class="btn" data-n="1" data-freq="2000" data-voz="Poste al centro" data-msg="1 pitido: poste detectado al centro" aria-pressed="false">
           <span>Poste</span><span class="beepBadge">1× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="2" data-freq="2000" data-msg="2 pitidos: poste caído o inclinado" aria-pressed="false">
+        <button type="button" class="btn" data-n="2" data-freq="2000" data-voz="Poste caído a la izquierda" data-msg="2 pitidos: poste caído a la izquierda" aria-pressed="false">
           <span>Poste caído</span><span class="beepBadge">2× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="3" data-freq="2000" data-msg="3 pitidos: bache o banqueta rota" aria-pressed="false">
+        <button type="button" class="btn" data-n="3" data-freq="2000" data-voz="Banqueta rota al centro" data-msg="3 pitidos: bache o banqueta rota al centro" aria-pressed="false">
           <span>Banqueta rota</span><span class="beepBadge">3× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="4" data-freq="2000" data-msg="4 pitidos: rama baja en la ruta" aria-pressed="false">
+        <button type="button" class="btn" data-n="4" data-freq="2000" data-voz="Rama a la derecha" data-msg="4 pitidos: rama baja a la derecha" aria-pressed="false">
           <span>Rama</span><span class="beepBadge">4× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="1" data-freq="1400" data-msg="1 pitido grave: árbol o tronco en banqueta" aria-pressed="false">
+        <button type="button" class="btn" data-n="1" data-freq="1400" data-voz="Árbol en banqueta a la izquierda" data-msg="1 pitido grave: árbol o tronco a la izquierda" aria-pressed="false">
           <span>Árbol / Tronco</span><span class="beepBadge">1× BEEP</span>
         </button>
       </div>
@@ -767,19 +795,19 @@ footer {
       <div class="glassCard rv">
         <span class="stepNum">PRECISIÓN BOX(P)</span>
         <div class="metricVal">81.2%</div>
-        <div class="barTrack"><div class="barFill" style="width:81.2%"></div></div>
+        <div class="barTrack"><div class="barFill" style="--target-w:81.2%"></div></div>
         <p>Más de 4 de cada 5 alertas emitidas corresponden a un obstáculo real en la ruta.</p>
       </div>
       <div class="glassCard rv">
         <span class="stepNum">mAP50 GLOBAL</span>
         <div class="metricVal">65.9%</div>
-        <div class="barTrack"><div class="barFill" style="width:65.9%"></div></div>
+        <div class="barTrack"><div class="barFill" style="--target-w:65.9%"></div></div>
         <p>Subimos casi 10 puntos respecto a la primera versión tras fusionar 4 datasets urbanos.</p>
       </div>
       <div class="glassCard rv">
         <span class="stepNum">RECALL & VELOCIDAD</span>
         <div class="metricVal">60.9%</div>
-        <div class="barTrack"><div class="barFill" style="width:60.9%"></div></div>
+        <div class="barTrack"><div class="barFill" style="--target-w:60.9%"></div></div>
         <p>Inferencia de <strong>4.8 ms</strong> por cuadro en GPU, permitiendo respuesta fluida en tiempo real.</p>
       </div>
     </div>
@@ -889,7 +917,7 @@ footer {
 
 <section id="contacto" class="band">
   <div class="wrap">
-    <span class="tag" style="color:var(--lamp);border-color:rgba(255,180,0,.3)">// COLABORACIÓN ABIERTA</span>
+    <span class="tag" style="color:var(--lamp-bright);border-color:rgba(255,180,0,.3)">// COLABORACIÓN ABIERTA</span>
     <h2>Quiero saber más o colaborar</h2>
     <p>Si quieres probar el prototipo, dar opinión o aportar fotografías de calles y banquetas para entrenar el modelo, déjanos tus datos.</p>
     <form id="formContacto" class="formGrid" style="max-width:34rem" novalidate>
@@ -914,7 +942,7 @@ footer {
       </div>
       <p class="priv">Usamos tu nombre, tu contacto y tu mensaje solo para responderte y para organizar la colaboración en GUÍA. No los compartimos con nadie. Para que los borremos, escríbenos por este mismo formulario.</p>
       <div>
-        <button type="submit" class="btn" style="background:var(--lamp);border-color:var(--lamp);color:#060B16">Enviar mensaje</button>
+        <button type="submit" class="btn" style="background:var(--lamp-bright);border-color:var(--lamp-bright);color:#060B16">Enviar mensaje</button>
       </div>
       <p id="conStatus" class="statusMsg" role="status" aria-live="polite"></p>
     </form>
@@ -926,12 +954,11 @@ footer {
   <div class="wrap">Proyecto académico de Ingeniería en Computación, UTEG.</div>
 </footer>
 
-<!-- SDK de Supabase con defer para no bloquear la carga offline -->
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   /* =========================================================
-     1. CONFIGURACIÓN DE SUPABASE (Tus llaves ya conectadas)
+     1. CONFIGURACIÓN DE SUPABASE
      ========================================================= */
   var SUPABASE_URL = 'https://zmyhgholzaibnplitnmw.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_sKsn_fhpFYB6UNpQo9jzEw_MArluelc';
@@ -964,15 +991,37 @@ footer {
   });
 
   /* =========================================================
-     3. SIMULADOR DE PITIDOS (SOLO BUZZER)
+     3. SIMULADOR DE PITIDOS + VOZ GUÍA (WEB SPEECH API)
      ========================================================= */
   var aviso = document.getElementById('aviso');
   var ctx = null;
   var timersPitidos = [];
   var dots = document.querySelectorAll('.dots i');
   var demoBtns = document.querySelectorAll('.demoControls button[data-msg]');
+  var btnVoz = document.getElementById('toggleVoz');
+  var vozActiva = true;
 
-  function pitar(k, freq) {
+  btnVoz.addEventListener('click', function() {
+    vozActiva = !vozActiva;
+    btnVoz.setAttribute('aria-pressed', vozActiva ? 'true' : 'false');
+    btnVoz.textContent = vozActiva ? 'Voz guía: Activada' : 'Voz guía: Silenciada';
+    if (!vozActiva && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  });
+
+  function hablar(texto) {
+    if (!vozActiva || !('speechSynthesis' in window) || !texto) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(texto);
+      u.lang = 'es-MX';
+      u.rate = 1.05;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function pitar(k, freq, textoVoz) {
     freq = freq || 2000;
     try {
       var AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -1002,11 +1051,23 @@ footer {
             o.start(t0);
             o.stop(t0 + 0.2);
 
-            var tid = setTimeout(function() {
+            var tidOn = setTimeout(function() {
               if (dots[idx]) dots[idx].classList.add('on');
             }, idx * 320 + 30);
-            timersPitidos.push(tid);
+
+            var tidOff = setTimeout(function() {
+              if (dots[idx]) dots[idx].classList.remove('on');
+            }, idx * 320 + 210);
+
+            timersPitidos.push(tidOn, tidOff);
           })(i);
+        }
+
+        if (textoVoz) {
+          var tidVoz = setTimeout(function() {
+            hablar(textoVoz);
+          }, k * 320 + 80);
+          timersPitidos.push(tidVoz);
         }
       };
 
@@ -1026,6 +1087,7 @@ footer {
       var t = b.getAttribute('data-msg');
       var k = parseInt(b.getAttribute('data-n'), 10);
       var f = parseInt(b.getAttribute('data-freq'), 10) || 2000;
+      var v = b.getAttribute('data-voz');
 
       aviso.classList.add('cambia');
       setTimeout(function() {
@@ -1033,12 +1095,12 @@ footer {
         aviso.classList.remove('cambia');
       }, 140);
 
-      pitar(k, f);
+      pitar(k, f, v);
     });
   });
 
   /* =========================================================
-     4. ANIMACIONES DE ENTRADA
+     4. ANIMACIONES DE ENTRADA Y BARRAS DE TELEMETRÍA
      ========================================================= */
   var rv = document.querySelectorAll('.rv');
   if ('IntersectionObserver' in window) {
@@ -1069,9 +1131,6 @@ footer {
   document.getElementById('menos').addEventListener('click', function() { if (n > 1) { n--; act(); } });
   act();
 
-  /* =========================================================
-     ENVÍO SEGURO A SUPABASE (validación, anti-spam, sin datos locales)
-     ========================================================= */
   var T0 = Date.now();
   var reContacto = /^(?:[^@\s]+@[^@\s]+\.[^@\s]+|[+()\d\s-]{8,20})$/;
   var MSG_ERR = 'No pudimos guardarlo en este momento. Inténtalo de nuevo en unos minutos.';
@@ -1087,9 +1146,10 @@ footer {
     }
   }
 
-  function estado(el, clase, texto) {
+  function estado(el, clase, texto, focoEl) {
     el.className = 'statusMsg' + (clase ? ' ' + clase : '');
     el.textContent = texto;
+    if (focoEl) focoEl.focus();
   }
 
   // Apartado de preventa -> tabla 'apartados'
@@ -1098,26 +1158,29 @@ footer {
   formPedido.addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    if (document.getElementById('pedWeb').value) {          // campo trampa: bot
+    if (document.getElementById('pedWeb').value) {
       estado(pedStatus, 'ok', '¡Listo! Recibimos tu solicitud.');
       formPedido.reset();
       return;
     }
 
-    var nombre = document.getElementById('pedNombre').value.trim();
-    var contacto = document.getElementById('pedContacto').value.trim();
+    var elNombre = document.getElementById('pedNombre');
+    var elContacto = document.getElementById('pedContacto');
+    var elAcepto = document.getElementById('pedAcepto');
+    var nombre = elNombre.value.trim();
+    var contacto = elContacto.value.trim();
     var nota = document.getElementById('pedNota').value.trim().slice(0, 200);
 
     if (nombre.length < 2 || nombre.length > 100) {
-      estado(pedStatus, 'err', 'Escribe tu nombre completo.');
+      estado(pedStatus, 'err', 'Escribe tu nombre completo.', elNombre);
       return;
     }
     if (contacto.length > 120 || !reContacto.test(contacto)) {
-      estado(pedStatus, 'err', 'Escribe un correo válido o un número de WhatsApp.');
+      estado(pedStatus, 'err', 'Escribe un correo válido o un número de WhatsApp.', elContacto);
       return;
     }
-    if (!document.getElementById('pedAcepto').checked) {
-      estado(pedStatus, 'err', 'Marca que leíste el aviso de privacidad.');
+    if (!elAcepto.checked) {
+      estado(pedStatus, 'err', 'Marca que leíste el aviso de privacidad.', elAcepto);
       return;
     }
     if (Date.now() - T0 < 3000) {
@@ -1156,30 +1219,34 @@ footer {
   formContacto.addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    if (document.getElementById('conWeb').value) {          // campo trampa: bot
+    if (document.getElementById('conWeb').value) {
       estado(conStatus, 'ok', '¡Gracias! Recibimos tu mensaje.');
       formContacto.reset();
       return;
     }
 
-    var nombre = document.getElementById('conNombre').value.trim();
-    var contacto = document.getElementById('conCorreo').value.trim();
-    var mensaje = document.getElementById('conMensaje').value.trim();
+    var elNombre = document.getElementById('conNombre');
+    var elContacto = document.getElementById('conCorreo');
+    var elMensaje = document.getElementById('conMensaje');
+    var elAcepto = document.getElementById('conAcepto');
+    var nombre = elNombre.value.trim();
+    var contacto = elContacto.value.trim();
+    var mensaje = elMensaje.value.trim();
 
     if (nombre.length < 2 || nombre.length > 100) {
-      estado(conStatus, 'err', 'Escribe tu nombre.');
+      estado(conStatus, 'err', 'Escribe tu nombre.', elNombre);
       return;
     }
     if (contacto.length > 120 || !reContacto.test(contacto)) {
-      estado(conStatus, 'err', 'Escribe un correo válido o un número de teléfono.');
+      estado(conStatus, 'err', 'Escribe un correo válido o un número de teléfono.', elContacto);
       return;
     }
     if (mensaje.length < 5 || mensaje.length > 1000) {
-      estado(conStatus, 'err', 'Escribe un mensaje de entre 5 y 1000 caracteres.');
+      estado(conStatus, 'err', 'Escribe un mensaje de entre 5 y 1000 caracteres.', elMensaje);
       return;
     }
-    if (!document.getElementById('conAcepto').checked) {
-      estado(conStatus, 'err', 'Marca que leíste el aviso de privacidad.');
+    if (!elAcepto.checked) {
+      estado(conStatus, 'err', 'Marca que leíste el aviso de privacidad.', elAcepto);
       return;
     }
     if (Date.now() - T0 < 3000) {

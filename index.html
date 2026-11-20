@@ -714,25 +714,25 @@ footer {
   <div class="wrap">
     <div class="demoHeader">
       <span class="tag" style="color:var(--lamp-bright);border-color:rgba(255,180,0,.3);margin-bottom:0">// SIMULADOR ACÚSTICO EN VIVO</span>
-      <button type="button" class="voiceToggle" id="toggleVoz" aria-pressed="true">Voz guía: Activada</button>
+      <button type="button" class="voiceToggle" id="toggleVoz" aria-pressed="true">Voz J.A.R.V.I.S.: Activada</button>
     </div>
     <h2 style="margin-top:1rem">Así suena un aviso</h2>
-    <p>Cada obstáculo tiene su propio patrón de pitidos y ubicación espacial (izquierda, centro o derecha). Elige una categoría para escucharlo:</p>
+    <p>Cada obstáculo tiene su propio patrón de pitidos y asistencia de voz táctica con ubicación espacial (izquierda, centro o derecha). Elige una categoría para escucharlo:</p>
     <div class="demoBox">
       <div class="demoControls" role="group" aria-label="Simulador de alertas de obstáculos">
-        <button type="button" class="btn" data-n="1" data-freq="2000" data-voz="Poste al centro" data-msg="1 pitido: poste detectado al centro" aria-pressed="false">
+        <button type="button" class="btn" data-n="1" data-freq="2000" data-voz="Precaución, señor. Poste detectado al centro." data-msg="1 pitido: poste detectado al centro" aria-pressed="false">
           <span>Poste</span><span class="beepBadge">1× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="2" data-freq="2000" data-voz="Poste caído a la izquierda" data-msg="2 pitidos: poste caído a la izquierda" aria-pressed="false">
+        <button type="button" class="btn" data-n="2" data-freq="2000" data-voz="Atención. Poste caído en trayectoria izquierda." data-msg="2 pitidos: poste caído a la izquierda" aria-pressed="false">
           <span>Poste caído</span><span class="beepBadge">2× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="3" data-freq="2000" data-voz="Banqueta rota al centro" data-msg="3 pitidos: bache o banqueta rota al centro" aria-pressed="false">
+        <button type="button" class="btn" data-n="3" data-freq="2000" data-voz="Alerta. Banqueta rota al centro, reduzca el paso." data-msg="3 pitidos: bache o banqueta rota al centro" aria-pressed="false">
           <span>Banqueta rota</span><span class="beepBadge">3× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="4" data-freq="2000" data-voz="Rama a la derecha" data-msg="4 pitidos: rama baja a la derecha" aria-pressed="false">
+        <button type="button" class="btn" data-n="4" data-freq="2000" data-voz="Cuidado arriba. Rama baja a la derecha." data-msg="4 pitidos: rama baja a la derecha" aria-pressed="false">
           <span>Rama</span><span class="beepBadge">4× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="1" data-freq="1400" data-voz="Árbol en banqueta a la izquierda" data-msg="1 pitido grave: árbol o tronco a la izquierda" aria-pressed="false">
+        <button type="button" class="btn" data-n="1" data-freq="1400" data-voz="Obstáculo detectado. Árbol en banqueta a la izquierda." data-msg="1 pitido grave: árbol o tronco a la izquierda" aria-pressed="false">
           <span>Árbol / Tronco</span><span class="beepBadge">1× BEEP</span>
         </button>
       </div>
@@ -991,7 +991,7 @@ footer {
   });
 
   /* =========================================================
-     3. SIMULADOR DE PITIDOS + VOZ GUÍA (WEB SPEECH API)
+     3. SIMULADOR DE PITIDOS + VOZ ESTILO J.A.R.V.I.S.
      ========================================================= */
   var aviso = document.getElementById('aviso');
   var ctx = null;
@@ -1000,11 +1000,31 @@ footer {
   var demoBtns = document.querySelectorAll('.demoControls button[data-msg]');
   var btnVoz = document.getElementById('toggleVoz');
   var vozActiva = true;
+  var vozJarvis = null;
+
+  function cargarVozJarvis() {
+    if (!('speechSynthesis' in window)) return;
+    var voces = window.speechSynthesis.getVoices();
+    if (!voces.length) return;
+
+    // Prioriza voces masculinas naturales en español (ej. Jorge, Álvaro, Alonso en Edge/Chrome)
+    vozJarvis =
+      voces.find(function(v) {
+        return /es-(MX|ES|US)/i.test(v.lang) && /(Jorge|Alvaro|Álvaro|Alonso|Pablo|Raul|Raúl|Male|Natural)/i.test(v.name);
+      }) ||
+      voces.find(function(v) { return /es-(MX|ES|US)/i.test(v.lang); }) ||
+      voces[0];
+  }
+
+  if ('speechSynthesis' in window) {
+    cargarVozJarvis();
+    window.speechSynthesis.onvoiceschanged = cargarVozJarvis;
+  }
 
   btnVoz.addEventListener('click', function() {
     vozActiva = !vozActiva;
     btnVoz.setAttribute('aria-pressed', vozActiva ? 'true' : 'false');
-    btnVoz.textContent = vozActiva ? 'Voz guía: Activada' : 'Voz guía: Silenciada';
+    btnVoz.textContent = vozActiva ? 'Voz J.A.R.V.I.S.: Activada' : 'Voz J.A.R.V.I.S.: Silenciada';
     if (!vozActiva && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -1014,9 +1034,13 @@ footer {
     if (!vozActiva || !('speechSynthesis' in window) || !texto) return;
     try {
       window.speechSynthesis.cancel();
+      if (!vozJarvis) cargarVozJarvis();
+
       var u = new SpeechSynthesisUtterance(texto);
-      u.lang = 'es-MX';
-      u.rate = 1.05;
+      if (vozJarvis) u.voice = vozJarvis;
+      u.lang = vozJarvis ? vozJarvis.lang : 'es-MX';
+      u.pitch = 0.85; // Tono más grave y sereno tipo asistente táctico
+      u.rate = 0.98;  // Ritmo pausado y elegante
       window.speechSynthesis.speak(u);
     } catch (e) {}
   }

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GUÍA — Lentes inteligentes con visión artificial</title>
-<meta name="description" content="Prototipo académico de lentes con cámara ESP32-CAM y red neuronal YOLOv8 que avisan mediante patrones de pitidos sobre postes, baches y ramas.">
+<meta name="description" content="Prototipo académico de lentes con cámara ESP32-CAM y red neuronal YOLOv8s que avisan mediante patrones de pitidos sobre postes, banquetas rotas, ramas y árboles.">
 <meta property="og:title" content="GUÍA — Lentes que te dicen qué hay en tu camino">
 <meta property="og:description" content="Tecnología asistiva con visión artificial para personas con discapacidad visual. Escucha cómo funcionan los avisos.">
 <meta property="og:type" content="website">
@@ -160,16 +160,17 @@ header {
   50% { transform: scale(1.35); opacity: .55; }
 }
 .navLinks {
-  display: none;
-  gap: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.15rem;
 }
-@media (min-width: 48rem) {
-  .navLinks { display: flex; }
+@media (max-width: 36rem) {
+  .navLinks { order: 3; width: 100%; justify-content: space-between; padding-top: .35rem; border-top: 1px solid var(--line); }
 }
 .navLinks a {
   color: var(--muted);
   text-decoration: none;
-  font-size: .95rem;
+  font-size: .92rem;
   font-weight: 700;
   transition: color .2s;
 }
@@ -225,7 +226,7 @@ h2 {
   margin: 0 0 1rem;
 }
 h3 { font-size: 1.3rem; margin: 0 0 .65rem; }
-p { margin: 0 0 1rem; max-width: 42rem; }
+p { margin: 0 0 1rem; max-width: 44rem; }
 .lead { font-size: 1.25rem; color: var(--muted); }
 
 /* Botones principales */
@@ -362,7 +363,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 }
 .demoControls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: .75rem;
   margin: 1.25rem 0;
 }
@@ -410,11 +411,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   box-shadow: 0 0 16px var(--lamp);
 }
 #aviso {
-  font-size: clamp(1.55rem, 4.5vw, 2.5rem);
+  font-size: clamp(1.45rem, 4vw, 2.25rem);
   line-height: 1.2;
   font-weight: 700;
   color: var(--lamp);
-  min-height: 2.6em;
+  min-height: 2.5em;
   margin: 1.25rem 0 0;
   transition: opacity .2s;
 }
@@ -458,7 +459,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   padding: .5rem 1.25rem;
   margin-top: 1.5rem;
 }
-table { border-collapse: collapse; width: 100%; min-width: 26rem; }
+table { border-collapse: collapse; width: 100%; min-width: 28rem; }
 th, td {
   text-align: left;
   padding: 1rem .75rem;
@@ -466,7 +467,7 @@ th, td {
   vertical-align: middle;
 }
 tr:last-child td { border-bottom: none; }
-th { font-weight: 700; color: var(--muted); font-size: .95rem; text-transform: uppercase; letter-spacing: .04em; }
+th { font-weight: 700; color: var(--muted); font-size: .92rem; text-transform: uppercase; letter-spacing: .04em; }
 
 .pill {
   display: inline-block;
@@ -502,6 +503,21 @@ th { font-weight: 700; color: var(--muted); font-size: .95rem; text-transform: u
   background: linear-gradient(90deg, var(--accent), var(--lamp));
   border-radius: 999px;
 }
+.classChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  margin-top: 1.5rem;
+}
+.classChip {
+  font-family: "JetBrains Mono", monospace;
+  font-size: .84rem;
+  padding: .45rem .85rem;
+  border-radius: .6rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.classChip strong { color: var(--accent); }
 
 /* Preventa y Formularios */
 .precioGrid { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
@@ -619,7 +635,7 @@ footer {
     <nav class="navLinks" aria-label="Secciones principales">
       <a href="#demo">Simulador</a>
       <a href="#arquitectura">Tecnología</a>
-      <a href="#metricas">YOLOv8</a>
+      <a href="#metricas">YOLOv8s</a>
       <a href="#precio">Preventa</a>
     </nav>
     <div class="topControls">
@@ -635,8 +651,8 @@ footer {
     <div>
       <span class="tag">// VISIÓN ARTIFICIAL ASISTIVA</span>
       <h1><span class="gradText">Lentes que te dicen qué hay en tu camino</span></h1>
-      <p class="lead">GUÍA integra una cámara ESP32-CAM y una red neuronal YOLOv8 para reconocer postes, baches y ramas, avisándote con patrones acústicos claros sin bloquear tus oídos.</p>
-      <p>Prototipo académico desarrollado para impulsar la autonomía de personas con discapacidad visual.</p>
+      <p class="lead">GUÍA integra una cámara ESP32-CAM y una red neuronal YOLOv8s entrenada en 5 clases urbanas para reconocer postes, banquetas rotas, ramas y árboles, avisándote con patrones acústicos claros sin bloquear tus oídos.</p>
+      <p>Prototipo académico desarrollado para impulsar la autonomía y movilidad segura de personas con discapacidad visual.</p>
       <div class="btnGroup">
         <a class="btn" href="#demo">Escuchar un aviso</a>
         <a class="btn alt" href="#precio">Apartar prototipo</a>
@@ -646,7 +662,7 @@ footer {
     <div class="hudCard" aria-hidden="true">
       <div class="hudTop">
         <span>ESP32-CAM // ONLINE</span>
-        <span>MODELO: YOLOv8</span>
+        <span>MODELO: YOLOv8s (5 CLASES)</span>
       </div>
       <div class="visual">
         <div class="scanLine"></div>
@@ -661,9 +677,9 @@ footer {
         </svg>
       </div>
       <div class="hudSpecs">
-        <div><strong>Gran Angular</strong><span>Óptica Frontal</span></div>
-        <div><strong>4 Patrones</strong><span>Alerta Buzzer</span></div>
-        <div><strong>Oído Libre</strong><span>Sin Audífonos</span></div>
+        <div><strong>5 Clases</strong><span>Detección Urbana</span></div>
+        <div><strong>3 Zonas</strong><span>Izq · Centro · Der</span></div>
+        <div><strong>Oído Libre</strong><span>Alerta Buzzer</span></div>
       </div>
     </div>
   </div>
@@ -673,20 +689,23 @@ footer {
   <div class="wrap">
     <span class="tag" style="color:var(--lamp);border-color:rgba(255,180,0,.3)">// SIMULADOR ACÚSTICO EN VIVO</span>
     <h2>Así suena un aviso</h2>
-    <p>Cada obstáculo tiene su propio patrón de pitidos. Elige uno para escucharlo. Si no oyes nada, sube el volumen: el texto e indicadores visuales aparecen igual.</p>
+    <p>Cada obstáculo tiene su propio patrón de pitidos y ubicación espacial (izquierda, centro o derecha). Elige una categoría para escucharla:</p>
     <div class="demoBox">
       <div class="demoControls" role="group" aria-label="Simulador de alertas de obstáculos">
-        <button type="button" class="btn" data-n="1" data-msg="1 pitido: poste" aria-pressed="false">
+        <button type="button" class="btn" data-n="1" data-freq="2000" data-msg="1 pitido: poste detectado en el camino" aria-pressed="false">
           <span>Poste</span><span class="beepBadge">1× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="2" data-msg="2 pitidos: poste caído" aria-pressed="false">
+        <button type="button" class="btn" data-n="2" data-freq="2000" data-msg="2 pitidos: poste caído o inclinado" aria-pressed="false">
           <span>Poste caído</span><span class="beepBadge">2× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="3" data-msg="3 pitidos: bache o banqueta rota" aria-pressed="false">
-          <span>Bache o banqueta</span><span class="beepBadge">3× BEEP</span>
+        <button type="button" class="btn" data-n="3" data-freq="2000" data-msg="3 pitidos: bache o banqueta rota" aria-pressed="false">
+          <span>Banqueta rota</span><span class="beepBadge">3× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="4" data-msg="4 pitidos: rama" aria-pressed="false">
+        <button type="button" class="btn" data-n="4" data-freq="2000" data-msg="4 pitidos: rama baja en la ruta" aria-pressed="false">
           <span>Rama</span><span class="beepBadge">4× BEEP</span>
+        </button>
+        <button type="button" class="btn" data-n="1" data-freq="1400" data-msg="1 pitido grave: árbol o tronco en banqueta" aria-pressed="false">
+          <span>Árbol / Tronco</span><span class="beepBadge">1× BEEP</span>
         </button>
       </div>
       <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -699,7 +718,7 @@ footer {
   <div class="wrap">
     <span class="tag">// FLUJO DE PROCESAMIENTO</span>
     <h2>Cómo funciona</h2>
-    <p>La red neuronal aprendió viendo miles de fotografías etiquetadas de calles y banquetas, corrigiendo sus errores hasta identificar obstáculos nuevos en tiempo real.</p>
+    <p>Entrenamos una arquitectura YOLOv8s fusionando múltiples conjuntos de imágenes urbanas para identificar riesgos reales y calcular su posición relativa frente al usuario en tiempo real.</p>
     <div class="cardsGrid">
       <div class="glassCard rv">
         <span class="stepNum">01 // CAPTURA ÓPTICA</span>
@@ -707,14 +726,14 @@ footer {
         <p>La cámara ESP32-CAM montada en el puente de los lentes observa el camino frente al usuario con lente gran angular.</p>
       </div>
       <div class="glassCard rv">
-        <span class="stepNum">02 // INFERENCIA IA</span>
-        <h3>Detección con YOLOv8</h3>
-        <p>Nuestra red neuronal analiza cada cuadro y clasifica el tipo de obstáculo urbano en fracciones de segundo.</p>
+        <span class="stepNum">02 // INFERENCIA Y UBICACIÓN</span>
+        <h3>Detección con YOLOv8s</h3>
+        <p>El modelo clasifica 5 tipos de obstáculos en milisegundos, prioriza el más cercano por área y determina si está a la izquierda, centro o derecha.</p>
       </div>
       <div class="glassCard rv">
         <span class="stepNum">03 // ALERTA SONORA</span>
         <h3>Codificación por pitidos</h3>
-        <p>Un mini buzzer emite 1 pitido para poste, 2 para poste caído, 3 para bache o banqueta rota y 4 para rama.</p>
+        <p>Un mini buzzer emite 1 pitido para poste o árbol, 2 para poste caído, 3 para banqueta rota o bache y 4 para rama.</p>
       </div>
     </div>
   </div>
@@ -726,12 +745,13 @@ footer {
     <h2>Qué detecta hoy</h2>
     <div class="tabla rv">
       <table>
-        <thead><tr><th>Obstáculo</th><th>Patrón sonoro</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Obstáculo</th><th>Patrón sonoro</th><th>Precisión mAP50</th><th>Estado</th></tr></thead>
         <tbody>
-          <tr><td><strong>Poste</strong></td><td class="mono">1 pitido</td><td><span class="pill ok">Funciona en pruebas</span></td></tr>
-          <tr><td><strong>Poste caído o inclinado</strong></td><td class="mono">2 pitidos</td><td><span class="pill ok">Funciona en pruebas</span></td></tr>
-          <tr><td><strong>Bache o banqueta rota</strong></td><td class="mono">3 pitidos</td><td><span class="pill warn">En entrenamiento</span></td></tr>
-          <tr><td><strong>Rama de árbol</strong></td><td class="mono">4 pitidos</td><td><span class="pill dev">En desarrollo</span></td></tr>
+          <tr><td><strong>Árbol / Tronco en banqueta</strong></td><td class="mono">1 pitido</td><td class="mono">88.3%</td><td><span class="pill ok">Validado</span></td></tr>
+          <tr><td><strong>Banqueta rota o bache</strong></td><td class="mono">3 pitidos</td><td class="mono">72.3%</td><td><span class="pill ok">Validado (87.5% real)</span></td></tr>
+          <tr><td><strong>Rama de árbol</strong></td><td class="mono">4 pitidos</td><td class="mono">61.1%</td><td><span class="pill ok">Activo en pruebas</span></td></tr>
+          <tr><td><strong>Poste</strong></td><td class="mono">1 pitido</td><td class="mono">55.4%</td><td><span class="pill ok">Validado (80% real)</span></td></tr>
+          <tr><td><strong>Poste caído o inclinado</strong></td><td class="mono">2 pitidos</td><td class="mono">52.4%</td><td><span class="pill warn">En ajuste fino</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -740,30 +760,39 @@ footer {
 
 <section id="metricas">
   <div class="wrap">
-    <span class="tag">// TELEMETRÍA DEL MODELO</span>
+    <span class="tag">// TELEMETRÍA DEL MODELO YOLOv8s</span>
     <h2>Lo que hemos medido</h2>
-    <p>Probamos el modelo (YOLOv8) con fotos que nunca había visto. Estos son los resultados reales, sin redondear hacia arriba.</p>
+    <p>Evaluamos nuestro modelo fusionado de 5 clases sobre <strong>413 imágenes de validación (770 instancias)</strong> y en pruebas de campo con fotografías reales de calles y banquetas (75% de efectividad global).</p>
     <div class="cardsGrid">
       <div class="glassCard rv">
-        <span class="stepNum">PRECISIÓN</span>
-        <div class="metricVal">0.85</div>
-        <div class="barTrack"><div class="barFill" style="width:85%"></div></div>
-        <p>Cuando avisa, casi siempre acierta en el obstáculo detectado.</p>
+        <span class="stepNum">PRECISIÓN BOX(P)</span>
+        <div class="metricVal">81.2%</div>
+        <div class="barTrack"><div class="barFill" style="width:81.2%"></div></div>
+        <p>Más de 4 de cada 5 alertas emitidas corresponden a un obstáculo real en la ruta.</p>
       </div>
       <div class="glassCard rv">
-        <span class="stepNum">RECALL</span>
-        <div class="metricVal">0.53</div>
-        <div class="barTrack"><div class="barFill" style="width:53%"></div></div>
-        <p>Todavía se le escapa cerca de la mitad de los obstáculos en escena.</p>
+        <span class="stepNum">mAP50 GLOBAL</span>
+        <div class="metricVal">65.9%</div>
+        <div class="barTrack"><div class="barFill" style="width:65.9%"></div></div>
+        <p>Subimos casi 10 puntos respecto a la primera versión tras fusionar 4 datasets urbanos.</p>
       </div>
       <div class="glassCard rv">
-        <span class="stepNum">mAP50</span>
-        <div class="metricVal">0.56</div>
-        <div class="barTrack"><div class="barFill" style="width:56%"></div></div>
-        <p>Medida general de qué tan bien los encuentra y los ubica espacialmente.</p>
+        <span class="stepNum">RECALL & VELOCIDAD</span>
+        <div class="metricVal">60.9%</div>
+        <div class="barTrack"><div class="barFill" style="width:60.9%"></div></div>
+        <p>Inferencia de <strong>4.8 ms</strong> por cuadro en GPU, permitiendo respuesta fluida en tiempo real.</p>
       </div>
     </div>
-    <p style="margin-top:1.25rem">Por eso GUÍA es una ayuda extra, no un reemplazo del bastón. Seguimos ampliando el conjunto de fotos para mejorar estos números.</p>
+
+    <div class="classChips rv" aria-label="Rendimiento mAP50 por categoría">
+      <span class="classChip">Árbol: <strong>88.3%</strong></span>
+      <span class="classChip">Banqueta rota: <strong>72.3%</strong></span>
+      <span class="classChip">Rama: <strong>61.1%</strong></span>
+      <span class="classChip">Poste: <strong>55.4%</strong></span>
+      <span class="classChip">Poste caído: <strong>52.4%</strong></span>
+    </div>
+
+    <p style="margin-top:1.25rem">GUÍA funciona como un complemento inteligente y no reemplaza al bastón blanco. Seguimos recolectando fotografías locales para incrementar la cobertura en condiciones de poca luz.</p>
   </div>
 </section>
 
@@ -788,7 +817,7 @@ footer {
         <p>Emite los patrones de alerta sin tapar los oídos, permitiendo seguir escuchando el entorno de la calle.</p>
       </div>
     </div>
-    <p style="margin-top:1.25rem">Hoy el procesamiento corre en una laptop. El siguiente paso es llevar todo a un dispositivo portátil.</p>
+    <p style="margin-top:1.25rem">Hoy la inferencia corre en una laptop con umbral calibrado (0.48) y registro automático de detecciones. El siguiente paso es migrarlo a cómputo embebido portátil.</p>
   </div>
 </section>
 
@@ -804,8 +833,8 @@ footer {
         <ul>
           <li>Lentes con cámara ESP32-CAM gran angular</li>
           <li>Power bank de 5 V y cables</li>
-          <li>Mini buzzer con 4 patrones de pitidos</li>
-          <li>Carcasa impresa en 3D</li>
+          <li>Mini buzzer con patrones de pitidos para 5 obstáculos</li>
+          <li>Carcasa ligera impresa en 3D</li>
         </ul>
         <p style="color:#94A3B8;font-size:.98rem">En esta versión de prueba, el procesamiento corre en tu laptop.</p>
       </div>
@@ -852,8 +881,8 @@ footer {
   <div class="wrap">
     <span class="tag">// SOPORTE Y DUDAS</span>
     <h2>Preguntas frecuentes</h2>
-    <details><summary>¿Reemplaza al bastón o al perro guía?</summary><p>No. Es un complemento que avisa de obstáculos; no garantiza detectarlos todos.</p></details>
-    <details><summary>¿Funciona de noche?</summary><p>Todavía no lo hemos probado con poca luz. La cámara necesita buena iluminación para reconocer bien.</p></details>
+    <details><summary>¿Reemplaza al bastón o al perro guía?</summary><p>No. Es un complemento que avisa de obstáculos a nivel de suelo y altura media; no garantiza detectarlos todos.</p></details>
+    <details><summary>¿Funciona de noche?</summary><p>Todavía no lo hemos probado con poca luz. La cámara necesita iluminación ambiental adecuada para reconocer bien.</p></details>
     <details><summary>¿Cuánto cuesta?</summary><p>El precio de preventa estimado es de $1,449 MXN por unidad. Es un prototipo y puede cambiar antes de la entrega.</p></details>
   </div>
 </section>
@@ -862,7 +891,7 @@ footer {
   <div class="wrap">
     <span class="tag" style="color:var(--lamp);border-color:rgba(255,180,0,.3)">// COLABORACIÓN ABIERTA</span>
     <h2>Quiero saber más o colaborar</h2>
-    <p>Si quieres probar el prototipo, dar opinión o colaborar en el entrenamiento de datos, déjanos tus datos.</p>
+    <p>Si quieres probar el prototipo, dar opinión o aportar fotografías de calles y banquetas para entrenar el modelo, déjanos tus datos.</p>
     <form id="formContacto" class="formGrid" style="max-width:34rem" novalidate>
       <div class="field">
         <label for="conNombre">Tu nombre</label>
@@ -996,6 +1025,7 @@ footer {
 
       var t = b.getAttribute('data-msg');
       var k = parseInt(b.getAttribute('data-n'), 10);
+      var f = parseInt(b.getAttribute('data-freq'), 10) || 2000;
 
       aviso.classList.add('cambia');
       setTimeout(function() {
@@ -1003,7 +1033,7 @@ footer {
         aviso.classList.remove('cambia');
       }, 140);
 
-      pitar(k, 2000);
+      pitar(k, f);
     });
   });
 

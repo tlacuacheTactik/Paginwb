@@ -661,6 +661,7 @@ footer {
       <a href="#demo">Simulador</a>
       <a href="#arquitectura">Tecnología</a>
       <a href="#metricas">YOLOv8s</a>
+      <a href="#entrenamiento">Entrenamiento</a>
       <a href="#precio">Preventa</a>
     </nav>
     <div class="topControls">
@@ -674,10 +675,10 @@ footer {
 <section class="hero">
   <div class="wrap heroGrid">
     <div>
-      <span class="tag">// VISIÓN ARTIFICIAL ASISTIVA</span>
+      <span class="tag" aria-hidden="true">// VISIÓN ARTIFICIAL ASISTIVA</span>
       <h1><span class="gradText">Lentes que te dicen qué hay en tu camino</span></h1>
       <p class="lead">GUÍA integra una cámara ESP32-CAM y una red neuronal YOLOv8s entrenada en 5 clases urbanas para reconocer postes, banquetas rotas, ramas y árboles, avisándote con patrones acústicos claros sin bloquear tus oídos.</p>
-      <p>Prototipo académico desarrollado para impulsar la autonomía y movilidad segura de personas con discapacidad visual.</p>
+      <p>Prototipo académico desarrollado para explorar una ayuda de bajo costo para la autonomía y movilidad de personas con discapacidad visual. Es un complemento, no sustituye al bastón blanco ni al perro guía.</p>
       <div class="btnGroup">
         <a class="btn" href="#demo">Escuchar un aviso</a>
         <a class="btn alt" href="#precio">Apartar prototipo</a>
@@ -686,7 +687,7 @@ footer {
 
     <div class="hudCard" aria-hidden="true">
       <div class="hudTop">
-        <span>ESP32-CAM // ONLINE</span>
+        <span>ESP32-CAM // ILUSTRACIÓN</span>
         <span>MODELO: YOLOv8s (5 CLASES)</span>
       </div>
       <div class="visual">
@@ -703,7 +704,7 @@ footer {
       </div>
       <div class="hudSpecs">
         <div><strong>5 Clases</strong><span>Detección Urbana</span></div>
-        <div><strong>3 Zonas</strong><span>Izq · Centro · Der</span></div>
+        <div><strong>4 Patrones</strong><span>1 a 4 pitidos</span></div>
         <div><strong>Oído Libre</strong><span>Alerta Buzzer</span></div>
       </div>
     </div>
@@ -713,26 +714,26 @@ footer {
 <section id="demo" class="band">
   <div class="wrap">
     <div class="demoHeader">
-      <span class="tag" style="color:var(--lamp-bright);border-color:rgba(255,180,0,.3);margin-bottom:0">// SIMULADOR ACÚSTICO EN VIVO</span>
-      <button type="button" class="voiceToggle" id="toggleVoz" aria-pressed="true">Voz J.A.R.V.I.S.: Activada</button>
+      <span class="tag" aria-hidden="true" style="color:var(--lamp-bright);border-color:rgba(255,180,0,.3);margin-bottom:0">// SIMULADOR ACÚSTICO EN VIVO</span>
+      <button type="button" class="voiceToggle" id="toggleVoz" aria-pressed="true">Voz explicativa: Activada</button>
     </div>
     <h2 style="margin-top:1rem">Así suena un aviso</h2>
-    <p>Cada obstáculo tiene su propio patrón de pitidos y asistencia de voz táctica con ubicación espacial (izquierda, centro o derecha). Elige una categoría para escucharlo:</p>
+    <p>Cada tipo de obstáculo tiene su propio patrón de pitidos. En esta demo, una voz lee además el nombre del obstáculo para que entiendas el patrón; los lentes reales solo emiten los pitidos. Elige una categoría para escucharlo:</p>
     <div class="demoBox">
       <div class="demoControls" role="group" aria-label="Simulador de alertas de obstáculos">
-        <button type="button" class="btn" data-n="1" data-freq="2000" data-voz="Precaución, señor. Poste detectado al centro." data-msg="1 pitido: poste detectado al centro" aria-pressed="false">
+        <button type="button" class="btn" data-n="1" data-freq="2000" data-voz="Poste detectado." data-msg="1 pitido: poste" aria-pressed="false">
           <span>Poste</span><span class="beepBadge">1× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="2" data-freq="2000" data-voz="Atención. Poste caído en trayectoria izquierda." data-msg="2 pitidos: poste caído a la izquierda" aria-pressed="false">
+        <button type="button" class="btn" data-n="2" data-freq="2000" data-voz="Poste caído detectado." data-msg="2 pitidos: poste caído" aria-pressed="false">
           <span>Poste caído</span><span class="beepBadge">2× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="3" data-freq="2000" data-voz="Alerta. Banqueta rota al centro, reduzca el paso." data-msg="3 pitidos: bache o banqueta rota al centro" aria-pressed="false">
+        <button type="button" class="btn" data-n="3" data-freq="2000" data-voz="Banqueta rota o bache detectado." data-msg="3 pitidos: bache o banqueta rota" aria-pressed="false">
           <span>Banqueta rota</span><span class="beepBadge">3× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="4" data-freq="2000" data-voz="Cuidado arriba. Rama baja a la derecha." data-msg="4 pitidos: rama baja a la derecha" aria-pressed="false">
+        <button type="button" class="btn" data-n="4" data-freq="2000" data-voz="Rama detectada." data-msg="4 pitidos: rama" aria-pressed="false">
           <span>Rama</span><span class="beepBadge">4× BEEP</span>
         </button>
-        <button type="button" class="btn" data-n="1" data-freq="1400" data-voz="Obstáculo detectado. Árbol en banqueta a la izquierda." data-msg="1 pitido grave: árbol o tronco a la izquierda" aria-pressed="false">
+        <button type="button" class="btn" data-n="1" data-freq="1400" data-voz="Árbol o tronco detectado." data-msg="1 pitido: árbol o tronco" aria-pressed="false">
           <span>Árbol / Tronco</span><span class="beepBadge">1× BEEP</span>
         </button>
       </div>
@@ -744,9 +745,9 @@ footer {
 
 <section id="arquitectura">
   <div class="wrap">
-    <span class="tag">// FLUJO DE PROCESAMIENTO</span>
+    <span class="tag" aria-hidden="true">// FLUJO DE PROCESAMIENTO</span>
     <h2>Cómo funciona</h2>
-    <p>Entrenamos una arquitectura YOLOv8s fusionando múltiples conjuntos de imágenes urbanas para identificar riesgos reales y calcular su posición relativa frente al usuario en tiempo real.</p>
+    <p>Entrenamos una arquitectura YOLOv8s fusionando múltiples conjuntos de imágenes urbanas para identificar obstáculos urbanos en las imágenes de la cámara. El sistema avisa del más grande en cuadro (normalmente el más cercano); todavía no indica de qué lado está ni a qué distancia.</p>
     <div class="cardsGrid">
       <div class="glassCard rv">
         <span class="stepNum">01 // CAPTURA ÓPTICA</span>
@@ -756,7 +757,7 @@ footer {
       <div class="glassCard rv">
         <span class="stepNum">02 // INFERENCIA Y UBICACIÓN</span>
         <h3>Detección con YOLOv8s</h3>
-        <p>El modelo clasifica 5 tipos de obstáculos en milisegundos, prioriza el más cercano por área y determina si está a la izquierda, centro o derecha.</p>
+        <p>El modelo clasifica 5 tipos de obstáculos en milisegundos, y elige el más grande en cuadro como el más cercano. Antes de avisar, descarta personas y exige varios cuadros seguidos para evitar falsas alarmas.</p>
       </div>
       <div class="glassCard rv">
         <span class="stepNum">03 // ALERTA SONORA</span>
@@ -769,46 +770,47 @@ footer {
 
 <section>
   <div class="wrap">
-    <span class="tag">// MATRIZ DE DETECCIÓN</span>
+    <span class="tag" aria-hidden="true">// MATRIZ DE DETECCIÓN</span>
     <h2>Qué detecta hoy</h2>
     <div class="tabla rv">
       <table>
-        <thead><tr><th>Obstáculo</th><th>Patrón sonoro</th><th>Precisión mAP50</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Obstáculo</th><th>Patrón sonoro</th><th>mAP50</th><th>Estado</th></tr></thead>
         <tbody>
-          <tr><td><strong>Árbol / Tronco en banqueta</strong></td><td class="mono">1 pitido</td><td class="mono">88.3%</td><td><span class="pill ok">Validado</span></td></tr>
-          <tr><td><strong>Banqueta rota o bache</strong></td><td class="mono">3 pitidos</td><td class="mono">72.3%</td><td><span class="pill ok">Validado (87.5% real)</span></td></tr>
-          <tr><td><strong>Rama de árbol</strong></td><td class="mono">4 pitidos</td><td class="mono">61.1%</td><td><span class="pill ok">Activo en pruebas</span></td></tr>
-          <tr><td><strong>Poste</strong></td><td class="mono">1 pitido</td><td class="mono">55.4%</td><td><span class="pill ok">Validado (80% real)</span></td></tr>
-          <tr><td><strong>Poste caído o inclinado</strong></td><td class="mono">2 pitidos</td><td class="mono">52.4%</td><td><span class="pill warn">En ajuste fino</span></td></tr>
+          <tr><td><strong>Árbol / Tronco en banqueta</strong></td><td class="mono">1 pitido</td><td class="mono">88.3%</td><td><span class="pill ok">Mejor resultado</span></td></tr>
+          <tr><td><strong>Banqueta rota o bache</strong></td><td class="mono">3 pitidos</td><td class="mono">72.3%</td><td><span class="pill ok">En pruebas</span></td></tr>
+          <tr><td><strong>Rama de árbol</strong></td><td class="mono">4 pitidos</td><td class="mono">61.1%</td><td><span class="pill ok">En pruebas</span></td></tr>
+          <tr><td><strong>Poste</strong></td><td class="mono">1 pitido</td><td class="mono">55.4%</td><td><span class="pill warn">En pruebas</span></td></tr>
+          <tr><td><strong>Poste caído o inclinado</strong></td><td class="mono">2 pitidos</td><td class="mono">52.4%</td><td><span class="pill warn">El más débil</span></td></tr>
         </tbody>
       </table>
     </div>
+    <p style="margin-top:1rem">mAP50 es una medida de 0 a 100% de qué tan bien el modelo encuentra y ubica cada clase en las imágenes de validación. Todavía es un prototipo: ninguna clase se considera garantizada.</p>
   </div>
 </section>
 
 <section id="metricas">
   <div class="wrap">
-    <span class="tag">// TELEMETRÍA DEL MODELO YOLOv8s</span>
+    <span class="tag" aria-hidden="true">// TELEMETRÍA DEL MODELO YOLOv8s</span>
     <h2>Lo que hemos medido</h2>
-    <p>Evaluamos nuestro modelo fusionado de 5 clases sobre <strong>413 imágenes de validación (770 instancias)</strong> y en pruebas de campo con fotografías reales de calles y banquetas (75% de efectividad global).</p>
+    <p>Evaluamos nuestro modelo fusionado de 5 clases sobre <strong>413 imágenes de validación (770 instancias)</strong> y además hicimos pruebas preliminares con fotografías propias de calles y banquetas. Esas pruebas usaron una muestra pequeña, así que aún no las presentamos como una cifra definitiva.</p>
     <div class="cardsGrid">
       <div class="glassCard rv">
         <span class="stepNum">PRECISIÓN BOX(P)</span>
         <div class="metricVal">81.2%</div>
         <div class="barTrack"><div class="barFill" style="--target-w:81.2%"></div></div>
-        <p>Más de 4 de cada 5 alertas emitidas corresponden a un obstáculo real en la ruta.</p>
+        <p>En validación, aproximadamente 4 de cada 5 detecciones coinciden con un obstáculo etiquetado. En la calle puede variar.</p>
       </div>
       <div class="glassCard rv">
         <span class="stepNum">mAP50 GLOBAL</span>
         <div class="metricVal">65.9%</div>
         <div class="barTrack"><div class="barFill" style="--target-w:65.9%"></div></div>
-        <p>Subimos casi 10 puntos respecto a la primera versión tras fusionar 4 datasets urbanos.</p>
+        <p>Mejoró casi 10 puntos respecto a la primera versión tras fusionar varios conjuntos de imágenes urbanas.</p>
       </div>
       <div class="glassCard rv">
-        <span class="stepNum">RECALL & VELOCIDAD</span>
+        <span class="stepNum">RECALL (OBSTÁCULOS ENCONTRADOS)</span>
         <div class="metricVal">60.9%</div>
         <div class="barTrack"><div class="barFill" style="--target-w:60.9%"></div></div>
-        <p>Inferencia de <strong>4.8 ms</strong> por cuadro en GPU, permitiendo respuesta fluida en tiempo real.</p>
+        <p>Recall: de cada 10 obstáculos etiquetados, el modelo encuentra unos 6. La inferencia tomó <strong>4.8 ms</strong> por cuadro en la GPU de Google Colab; en la laptop de la demo y con la transmisión por WiFi la respuesta es más lenta.</p>
       </div>
     </div>
 
@@ -824,9 +826,63 @@ footer {
   </div>
 </section>
 
+<section id="entrenamiento">
+  <div class="wrap">
+    <span class="tag" aria-hidden="true">// TRANSPARENCIA TÉCNICA</span>
+    <h2>Cómo lo entrenamos</h2>
+    <p>Partimos de YOLOv8, una red neuronal ya preentrenada, y la reentrenamos con imágenes etiquetadas de postes, banquetas rotas, ramas y árboles (transfer learning). Probamos varias configuraciones para ver cuál rendía mejor sobre las mismas imágenes de validación:</p>
+    <div class="tabla rv">
+      <table>
+        <thead><tr><th>Modelo</th><th>Épocas</th><th>Precisión</th><th>Recall</th><th>mAP50</th><th>mAP50-95</th></tr></thead>
+        <tbody>
+          <tr><td><strong>YOLOv8n</strong></td><td class="mono">30</td><td class="mono">81.2%</td><td class="mono">49.4%</td><td class="mono">54.7%</td><td class="mono">35.0%</td></tr>
+          <tr><td><strong>YOLOv8s</strong></td><td class="mono">100</td><td class="mono">84.8%</td><td class="mono">53.2%</td><td class="mono">56.1%</td><td class="mono">37.6%</td></tr>
+          <tr><td><strong>YOLOv8s + fondos sin obstáculos</strong></td><td class="mono">100</td><td class="mono">81.1%</td><td class="mono">50.8%</td><td class="mono">53.8%</td><td class="mono">36.7%</td></tr>
+          <tr><td><strong>YOLOv8s</strong></td><td class="mono">300 (paró en 286)</td><td class="mono">79.4%</td><td class="mono">53.1%</td><td class="mono">54.3%</td><td class="mono">37.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1rem"><strong>Lo que aprendimos:</strong> entrenar más tiempo no mejoró el resultado. Con 300 épocas el modelo se detuvo solo, sin ganar frente a 100. Lo que limita al modelo son los datos, no las épocas. Por eso fusionamos más conjuntos de imágenes urbanas y llegamos al modelo final de 5 clases (mAP50 de 65.9%).</p>
+    <p class="priv" style="max-width:none">Esta comparación se hizo con la primera versión del conjunto de imágenes. El modelo final de 5 clases usa datos fusionados y se evaluó aparte, con 413 imágenes de validación (770 instancias).</p>
+  </div>
+</section>
+
+<section id="errores">
+  <div class="wrap">
+    <span class="tag" aria-hidden="true">// LO QUE FALLÓ Y LO QUE AÚN FALLA</span>
+    <h2>Un error que encontramos y corregimos</h2>
+    <p>Al probar el modelo con la cámara en vivo, detectaba a una persona de pie como <strong>poste caído</strong>, y en otra prueba confundió una cara en primer plano con un obstáculo. Una silueta alargada se parece a un poste visto de lado, y el modelo no tenía ejemplos de personas como negativos.</p>
+    <div class="cardsGrid">
+      <div class="glassCard rv">
+        <span class="stepNum">CORRECCIÓN 01</span>
+        <h3>Filtro de personas</h3>
+        <p>Un segundo modelo (YOLOv8n) detecta personas. Si un obstáculo queda en más de la mitad dentro de una persona, se ignora.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">CORRECCIÓN 02</span>
+        <h3>Más exigencia donde se confunde</h3>
+        <p>Poste caído solo se avisa con 80% de confianza, frente a 50% de las demás clases. También se descartan cuadros que cubren casi toda la imagen.</p>
+      </div>
+      <div class="glassCard rv">
+        <span class="stepNum">CORRECCIÓN 03</span>
+        <h3>Confirmación</h3>
+        <p>El obstáculo debe aparecer en 3 cuadros seguidos y pasan al menos 2.5 segundos entre avisos, para no saturar al usuario.</p>
+      </div>
+    </div>
+    <h3 style="margin-top:2rem">Lo que todavía falla</h3>
+    <ul>
+      <li>Poste caído es la clase más débil (mAP50 de 52.4%) y puede seguir confundiéndose con otros objetos alargados.</li>
+      <li>El filtro de personas no es perfecto: si el segundo modelo no detecta a la persona, el error puede volver a aparecer.</li>
+      <li>Un solo buzzer indica el tipo de obstáculo, pero no el lado ni la distancia.</li>
+      <li>No lo hemos probado con poca luz ni de noche.</li>
+      <li>La respuesta depende de la red WiFi y de una laptop; la cámara transmite a un solo equipo a la vez.</li>
+    </ul>
+  </div>
+</section>
+
 <section>
   <div class="wrap">
-    <span class="tag">// ESPECIFICACIONES DE HARDWARE</span>
+    <span class="tag" aria-hidden="true">// ESPECIFICACIONES DE HARDWARE</span>
     <h2>Qué lleva</h2>
     <div class="cardsGrid">
       <div class="glassCard rv">
@@ -841,17 +897,17 @@ footer {
       </div>
       <div class="glassCard rv">
         <span class="stepNum">AUDIO ABIERTO</span>
-        <h3>Mini Buzzer Direccional</h3>
+        <h3>Mini Buzzer de Audio Abierto</h3>
         <p>Emite los patrones de alerta sin tapar los oídos, permitiendo seguir escuchando el entorno de la calle.</p>
       </div>
     </div>
-    <p style="margin-top:1.25rem">Hoy la inferencia corre en una laptop con umbral calibrado (0.48) y registro automático de detecciones. El siguiente paso es migrarlo a cómputo embebido portátil.</p>
+    <p style="margin-top:1.25rem">Hoy la cámara transmite por WiFi a una laptop que corre el modelo y le ordena al buzzer cuántos pitidos emitir. El umbral de confianza es de 0.5, y de 0.8 para poste caído. El siguiente paso es migrarlo a cómputo embebido portátil para no depender de la laptop.</p>
   </div>
 </section>
 
 <section id="precio">
   <div class="wrap">
-    <span class="tag">// RESERVA DE PROTOTIPO</span>
+    <span class="tag" aria-hidden="true">// RESERVA DE PROTOTIPO</span>
     <h2>Precio de preventa</h2>
     <div class="precioGrid">
       <div class="card rv">
@@ -894,7 +950,7 @@ footer {
             <input type="text" id="pedWeb" name="sitio_web" tabindex="-1" autocomplete="off">
           </div>
           <div>
-            <label class="chk"><input type="checkbox" id="pedAcepto"> He leído el aviso de privacidad.</label>
+            <label class="chk"><input type="checkbox" id="pedAcepto"> He leído el <a href="#legal">aviso de privacidad y los términos y condiciones</a>.</label>
           </div>
           <p class="priv">Es una preventa <strong>sin pago</strong>: no te cobramos nada ahora. Usamos tu nombre y tu contacto solo para confirmar tu apartado y avisarte sobre GUÍA. No los compartimos con nadie. Para que los borremos, escríbenos desde el formulario de contacto.</p>
           <button type="submit" class="btn">Registrar apartado</button>
@@ -907,9 +963,10 @@ footer {
 
 <section>
   <div class="wrap">
-    <span class="tag">// SOPORTE Y DUDAS</span>
+    <span class="tag" aria-hidden="true">// SOPORTE Y DUDAS</span>
     <h2>Preguntas frecuentes</h2>
     <details><summary>¿Reemplaza al bastón o al perro guía?</summary><p>No. Es un complemento que avisa de obstáculos a nivel de suelo y altura media; no garantiza detectarlos todos.</p></details>
+    <details><summary>¿Me dice de qué lado está el obstáculo?</summary><p>No. Con un solo buzzer, el aviso indica el tipo de obstáculo (1 a 4 pitidos) pero no su lado ni su distancia. Es una limitación actual del prototipo.</p></details>
     <details><summary>¿Funciona de noche?</summary><p>Todavía no lo hemos probado con poca luz. La cámara necesita iluminación ambiental adecuada para reconocer bien.</p></details>
     <details><summary>¿Cuánto cuesta?</summary><p>El precio de preventa estimado es de $1,449 MXN por unidad. Es un prototipo y puede cambiar antes de la entrega.</p></details>
   </div>
@@ -917,7 +974,7 @@ footer {
 
 <section id="contacto" class="band">
   <div class="wrap">
-    <span class="tag" style="color:var(--lamp-bright);border-color:rgba(255,180,0,.3)">// COLABORACIÓN ABIERTA</span>
+    <span class="tag" aria-hidden="true" style="color:var(--lamp-bright);border-color:rgba(255,180,0,.3)">// COLABORACIÓN ABIERTA</span>
     <h2>Quiero saber más o colaborar</h2>
     <p>Si quieres probar el prototipo, dar opinión o aportar fotografías de calles y banquetas para entrenar el modelo, déjanos tus datos.</p>
     <form id="formContacto" class="formGrid" style="max-width:34rem" novalidate>
@@ -938,7 +995,7 @@ footer {
         <input type="text" id="conWeb" name="sitio_web" tabindex="-1" autocomplete="off">
       </div>
       <div>
-        <label class="chk"><input type="checkbox" id="conAcepto"> He leído el aviso de privacidad.</label>
+        <label class="chk"><input type="checkbox" id="conAcepto"> He leído el <a href="#legal">aviso de privacidad y los términos y condiciones</a>.</label>
       </div>
       <p class="priv">Usamos tu nombre, tu contacto y tu mensaje solo para responderte y para organizar la colaboración en GUÍA. No los compartimos con nadie. Para que los borremos, escríbenos por este mismo formulario.</p>
       <div>
@@ -949,9 +1006,36 @@ footer {
   </div>
 </section>
 
+<section id="legal">
+  <div class="wrap">
+    <span class="tag" aria-hidden="true">// LEGAL</span>
+    <h2>Aviso de privacidad y términos y condiciones</h2>
+    <p class="priv" style="max-width:none">Última actualización: 23 de noviembre de 2026. Este sitio presenta un proyecto académico; los textos son un modelo informativo y no constituyen asesoría legal.</p>
+
+    <h3 id="privacidad" style="margin-top:1.5rem">Aviso de privacidad</h3>
+    <details open><summary>Quién es responsable de tus datos</summary><p>El equipo del proyecto GUÍA, desarrollado por un estudiante de Ingeniería en Computación de la UTEG, en Guadalajara, Jalisco, México. Puedes contactarnos desde el formulario de este sitio.</p></details>
+    <details><summary>Qué datos recabamos</summary><p>En el formulario de apartado: nombre, correo o WhatsApp, cantidad de unidades, total estimado y una nota opcional. En el formulario de contacto: nombre, correo o teléfono y tu mensaje. No pedimos datos sensibles, de pago ni bancarios.</p></details>
+    <details><summary>Para qué los usamos</summary><p>Solo para confirmar tu apartado, responder tu mensaje, avisarte sobre el avance de GUÍA y organizar la colaboración. No los vendemos ni los compartimos con terceros para publicidad.</p></details>
+    <details><summary>Dónde se guardan</summary><p>Los datos se almacenan en Supabase, un proveedor de base de datos en la nube cuyos servidores pueden estar fuera de México. El acceso a la base está limitado a quien administra el proyecto.</p></details>
+    <details><summary>Cuánto tiempo los conservamos</summary><p>Mientras dure la preventa y el proyecto académico, o hasta que pidas su eliminación.</p></details>
+    <details><summary>Tus derechos (ARCO)</summary><p>Puedes solicitar acceso, rectificación, cancelación u oposición al uso de tus datos, y revocar tu consentimiento, escribiéndonos desde el formulario de contacto con tu nombre y el dato por el que te registraste.</p></details>
+    <details><summary>Cookies y almacenamiento local</summary><p>El sitio no usa cookies de rastreo ni publicidad. Solo guarda en tu navegador la preferencia de modo claro u oscuro. Cargamos una librería de jsDelivr (CDN) para conectar el formulario con la base de datos.</p></details>
+    <details><summary>Cambios al aviso</summary><p>Cualquier cambio se publicará en esta misma página con su fecha de actualización.</p></details>
+
+    <h3 id="terminos" style="margin-top:1.5rem">Términos y condiciones</h3>
+    <details open><summary>1. Naturaleza del proyecto</summary><p>GUÍA es un prototipo académico. No es un dispositivo médico ni un producto certificado, y no está terminado para venta comercial.</p></details>
+    <details><summary>2. Es un complemento, no una garantía de seguridad</summary><p>GUÍA no sustituye al bastón blanco, al perro guía ni a otras ayudas de movilidad. Puede no detectar obstáculos, detectarlos tarde o emitir falsas alarmas. No debe usarse como única forma de orientación, y su uso en la calle es bajo responsabilidad de quien lo usa. Los resultados presentados se midieron en pruebas controladas y pueden variar.</p></details>
+    <details><summary>3. Preventa sin pago</summary><p>Apartar una unidad es solo registrar tu interés: no se cobra nada y no genera obligación de compra ni de entrega. El precio de $1,449 MXN es estimado y puede cambiar. Antes de cualquier pago te informaremos las condiciones finales, el plazo de entrega y las garantías.</p></details>
+    <details><summary>4. Disponibilidad</summary><p>Las unidades dependen de la disponibilidad de componentes y de que el proyecto avance. Podemos modificar, posponer o cancelar la preventa, y te avisaríamos con los datos que nos diste.</p></details>
+    <details><summary>5. Uso del sitio</summary><p>Te pedimos datos verdaderos y un uso de buena fe. No uses los formularios para enviar spam, contenido ofensivo ni datos de otras personas sin su permiso.</p></details>
+    <details><summary>6. Propiedad intelectual</summary><p>Los textos, el diseño del sitio y el código del proyecto pertenecen al equipo de GUÍA, salvo las herramientas y conjuntos de datos de terceros, que conservan sus propias licencias.</p></details>
+    <details><summary>7. Legislación aplicable</summary><p>Estos términos se rigen por las leyes de México. Para cualquier controversia, las partes se someten a los tribunales competentes de Guadalajara, Jalisco.</p></details>
+  </div>
+</section>
+
 </main>
 <footer>
-  <div class="wrap">Proyecto académico de Ingeniería en Computación, UTEG.</div>
+  <div class="wrap">Proyecto académico de Ingeniería en Computación, UTEG. · <a href="#privacidad">Aviso de privacidad</a> · <a href="#terminos">Términos y condiciones</a></div>
 </footer>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -991,7 +1075,7 @@ footer {
   });
 
   /* =========================================================
-     3. SIMULADOR DE PITIDOS + VOZ ESTILO J.A.R.V.I.S.
+     3. SIMULADOR DE PITIDOS + VOZ EXPLICATIVA
      ========================================================= */
   var aviso = document.getElementById('aviso');
   var ctx = null;
@@ -1000,15 +1084,15 @@ footer {
   var demoBtns = document.querySelectorAll('.demoControls button[data-msg]');
   var btnVoz = document.getElementById('toggleVoz');
   var vozActiva = true;
-  var vozJarvis = null;
+  var vozElegida = null;
 
-  function cargarVozJarvis() {
+  function cargarVoz() {
     if (!('speechSynthesis' in window)) return;
     var voces = window.speechSynthesis.getVoices();
     if (!voces.length) return;
 
-    // Prioriza voces masculinas naturales en español (ej. Jorge, Álvaro, Alonso en Edge/Chrome)
-    vozJarvis =
+    // Prioriza voces naturales en español (ej. Jorge, Álvaro, Alonso en Edge/Chrome)
+    vozElegida =
       voces.find(function(v) {
         return /es-(MX|ES|US)/i.test(v.lang) && /(Jorge|Alvaro|Álvaro|Alonso|Pablo|Raul|Raúl|Male|Natural)/i.test(v.name);
       }) ||
@@ -1017,14 +1101,14 @@ footer {
   }
 
   if ('speechSynthesis' in window) {
-    cargarVozJarvis();
-    window.speechSynthesis.onvoiceschanged = cargarVozJarvis;
+    cargarVoz();
+    window.speechSynthesis.onvoiceschanged = cargarVoz;
   }
 
   btnVoz.addEventListener('click', function() {
     vozActiva = !vozActiva;
     btnVoz.setAttribute('aria-pressed', vozActiva ? 'true' : 'false');
-    btnVoz.textContent = vozActiva ? 'Voz J.A.R.V.I.S.: Activada' : 'Voz J.A.R.V.I.S.: Silenciada';
+    btnVoz.textContent = vozActiva ? 'Voz explicativa: Activada' : 'Voz explicativa: Silenciada';
     if (!vozActiva && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -1034,13 +1118,13 @@ footer {
     if (!vozActiva || !('speechSynthesis' in window) || !texto) return;
     try {
       window.speechSynthesis.cancel();
-      if (!vozJarvis) cargarVozJarvis();
+      if (!vozElegida) cargarVoz();
 
       var u = new SpeechSynthesisUtterance(texto);
-      if (vozJarvis) u.voice = vozJarvis;
-      u.lang = vozJarvis ? vozJarvis.lang : 'es-MX';
-      u.pitch = 0.85; // Tono más grave y sereno tipo asistente táctico
-      u.rate = 0.98;  // Ritmo pausado y elegante
+      if (vozElegida) u.voice = vozElegida;
+      u.lang = vozElegida ? vozElegida.lang : 'es-MX';
+      u.pitch = 1;
+      u.rate = 0.98;
       window.speechSynthesis.speak(u);
     } catch (e) {}
   }

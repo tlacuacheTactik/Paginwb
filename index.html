@@ -1408,11 +1408,14 @@ try {
   scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.1));
   const d = new THREE.DirectionalLight(0xffffff, 1.4); d.position.set(80, 120, 100); scene.add(d);
   const grupo = new THREE.Group(); scene.add(grupo);
-  const piezas = [['modelos/1_patilla_con_riel.stl', 0x9aa5b1], ['modelos/3_soporte_deslizable.stl', 0x2a9d8f], ['modelos/4_tapa_soporte.stl', 0xe9c46a]];
+  const piezas = [['1_patilla_con_riel.stl', 0x9aa5b1], ['3_soporte_deslizable.stl', 0x2a9d8f], ['4_tapa_soporte.stl', 0xe9c46a]];
   const loader = new STLLoader();
-  await Promise.all(piezas.map(([u, c]) => new Promise((ok, no) => loader.load(u, g => {
-    grupo.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: c, roughness: .55, metalness: .1 }))); ok();
-  }, undefined, no))));
+  const cargar = u => new Promise((ok, no) => loader.load(u, ok, undefined, no));
+  await Promise.all(piezas.map(async ([n, c]) => {
+    let g;
+    try { g = await cargar('modelos/' + n); } catch (_) { g = await cargar(n); }   // carpeta modelos/ o raíz del repo
+    grupo.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: c, roughness: .55, metalness: .1 })));
+  }));
   grupo.rotation.x = -Math.PI / 2;               // el modelo usa Z como alto
   const box = new THREE.Box3().setFromObject(grupo), ctr = box.getCenter(new THREE.Vector3());
   grupo.position.sub(ctr);
@@ -1424,7 +1427,7 @@ try {
   addEventListener('resize', ajustar); ajustar();
   msg.remove();
   (function loop() { requestAnimationFrame(loop); ctl.update(); r.render(scene, cam); })();
-} catch (e) { msg.textContent = 'No se pudo cargar el modelo 3D en este navegador.'; console.error(e); }
+} catch (e) { msg.textContent = 'No se pudo cargar el modelo 3D (' + (e && e.message ? e.message : 'archivos STL no encontrados') + ').'; console.error(e); }
 </script>
 </body>
 </html>

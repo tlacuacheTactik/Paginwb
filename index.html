@@ -914,7 +914,13 @@ footer {
     <div id="visor3d" class="glassCard" style="height:380px;position:relative;overflow:hidden;padding:0" role="img" aria-label="Modelo 3D interactivo de la patilla de los lentes GUÍA con el soporte de la cámara">
       <p id="visor3dMsg" style="position:absolute;inset:0;display:grid;place-items:center;margin:0;color:var(--muted)">Cargando modelo 3D…</p>
     </div>
-    <p style="font-size:.85rem;color:var(--muted);margin-top:.6rem">Gris: patilla · Verde: soporte deslizable · Amarillo: tapa.</p>
+    <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin-top:.8rem">
+      <button type="button" class="chipBtn" id="animBtn" aria-pressed="true">Pausar animación</button>
+      <label style="display:flex;gap:.6rem;align-items:center;flex:1;min-width:14rem;font-size:.9rem;color:var(--muted)">Juntar
+        <input type="range" id="animSlider" min="0" max="100" value="0" aria-label="Juntar o separar el soporte de la patilla" style="flex:1">
+        Separar</label>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:.6rem">Gris: patilla · Naranja: riel macho (incluido en la patilla) · Verde transparente: soporte con su canal hembra · Amarillo: tapa. El soporte se desliza por el riel para cambiar el módulo sin tocar el cableado.</p>
   </div>
 </section>
 
@@ -1408,25 +1414,47 @@ try {
   scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.1));
   const d = new THREE.DirectionalLight(0xffffff, 1.4); d.position.set(80, 120, 100); scene.add(d);
   const grupo = new THREE.Group(); scene.add(grupo);
-  const piezas = [['1_patilla_con_riel.stl', 0x9aa5b1], ['3_soporte_deslizable.stl', 0x2a9d8f], ['4_tapa_soporte.stl', 0xe9c46a]];
+  const piezas = [['5_vista_patilla_sin_riel.stl', 0x9aa5b1, 1], ['6_vista_riel.stl', 0xf97316, 1], ['3_soporte_deslizable.stl', 0x2a9d8f, 0.38], ['4_tapa_soporte.stl', 0xe9c46a, 0.45]];
   const loader = new STLLoader();
   const cargar = u => new Promise((ok, no) => loader.load(u, ok, undefined, no));
-  await Promise.all(piezas.map(async ([n, c]) => {
+  const modulo = new THREE.Group();            // soporte + tapa: se mueven juntos
+  await Promise.all(piezas.map(async ([n, c, op]) => {
     let g;
     try { g = await cargar('modelos/' + n); } catch (_) { g = await cargar(n); }   // carpeta modelos/ o raíz del repo
-    grupo.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: c, roughness: .55, metalness: .1 })));
+    const mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: c, roughness: .55, metalness: .1, transparent: op < 1, opacity: op, depthWrite: op >= 1 }));
+    if (op < 1) mesh.renderOrder = 2;
+    (/^[56]_/.test(n) ? grupo : modulo).add(mesh);
   }));
+  grupo.add(modulo);
   grupo.rotation.x = -Math.PI / 2;               // el modelo usa Z como alto
   const box = new THREE.Box3().setFromObject(grupo), ctr = box.getCenter(new THREE.Vector3());
   grupo.position.sub(ctr);
-  cam.position.set(110, 80, 140);
+  cam.position.set(150, 100, 190);
   const ctl = new OrbitControls(cam, r.domElement);
   ctl.enableDamping = true; ctl.autoRotate = true; ctl.autoRotateSpeed = 1.2;
   ctl.addEventListener('start', () => ctl.autoRotate = false);
   const ajustar = () => { const w = cont.clientWidth, h = cont.clientHeight; r.setSize(w, h); cam.aspect = w / h; cam.updateProjectionMatrix(); };
   addEventListener('resize', ajustar); ajustar();
   msg.remove();
-  (function loop() { requestAnimationFrame(loop); ctl.update(); r.render(scene, cam); })();
+  // --- animación: el soporte se desliza por el riel (hacia atrás, +X) y vuelve ---
+  const DIST = 78, ALZA = 40, slider = document.getElementById('animSlider'), btn = document.getElementById('animBtn');
+  let auto = !matchMedia('(prefers-reduced-motion: reduce)').matches, u = 0, t0 = performance.now();
+  const suave = x => x * x * (3 - 2 * x);
+  const poner = v => { u = v; modulo.position.x = DIST * suave(Math.min(v / 0.6, 1)); modulo.position.y = ALZA * suave(Math.max((v - 0.6) / 0.4, 0)); slider.value = Math.round(v * 100); };
+  const textoBtn = () => { btn.textContent = auto ? 'Pausar animación' : 'Animar'; btn.setAttribute('aria-pressed', String(auto)); };
+  btn.addEventListener('click', () => { auto = !auto; t0 = performance.now() - ((u * 3000) | 0); textoBtn(); });
+  slider.addEventListener('input', () => { auto = false; textoBtn(); poner(slider.value / 100); });
+  textoBtn();
+  function ciclo(ms) {                         // 0-1 s quieto, 3 s separa, 1 s quieto, 3 s junta
+    const T = ms % 8000;
+    if (T < 1000) return 0; if (T < 4000) return (T - 1000) / 3000;
+    if (T < 5000) return 1; return 1 - (T - 5000) / 3000;
+  }
+  (function loop(now) {
+    requestAnimationFrame(loop);
+    if (auto) poner(ciclo(now - t0));
+    ctl.update(); r.render(scene, cam);
+  })(performance.now());
 } catch (e) { msg.textContent = 'No se pudo cargar el modelo 3D (' + (e && e.message ? e.message : 'archivos STL no encontrados') + ').'; console.error(e); }
 </script>
 </body>

@@ -662,6 +662,7 @@ footer {
       <a href="#arquitectura">Tecnología</a>
       <a href="#metricas">YOLOv8s</a>
       <a href="#entrenamiento">Entrenamiento</a>
+      <a href="#prototipo">Prototipo</a>
       <a href="#precio">Preventa</a>
     </nav>
     <div class="topControls">
@@ -902,6 +903,18 @@ footer {
       </div>
     </div>
     <p style="margin-top:1.25rem">Hoy la cámara transmite por WiFi a una laptop que corre el modelo y le ordena al buzzer cuántos pitidos emitir. El umbral de confianza es de 0.5, y de 0.8 para poste caído. El siguiente paso es migrarlo a cómputo embebido portátil para no depender de la laptop.</p>
+  </div>
+</section>
+
+<section id="prototipo">
+  <div class="wrap">
+    <span class="tag" aria-hidden="true">// PROTOTIPO</span>
+    <h2>Modelo 3D del prototipo</h2>
+    <p>Diseño de la patilla con riel: el módulo de la cámara se desliza y se puede cambiar sin tocar el cableado, que va por dentro. Arrastra para girar, rueda o pellizca para acercar. <strong>Es un diseño en desarrollo</strong>, todavía no es el producto final.</p>
+    <div id="visor3d" class="glassCard" style="height:380px;position:relative;overflow:hidden;padding:0" role="img" aria-label="Modelo 3D interactivo de la patilla de los lentes GUÍA con el soporte de la cámara">
+      <p id="visor3dMsg" style="position:absolute;inset:0;display:grid;place-items:center;margin:0;color:var(--muted)">Cargando modelo 3D…</p>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:.6rem">Gris: patilla · Verde: soporte deslizable · Amarillo: tapa.</p>
   </div>
 </section>
 
@@ -1379,6 +1392,39 @@ footer {
     formContacto.reset();
   });
 })();
+</script>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+const cont = document.getElementById('visor3d'), msg = document.getElementById('visor3dMsg');
+try {
+  const scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(35, 1, 1, 2000);
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
+  cont.appendChild(r.domElement);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.1));
+  const d = new THREE.DirectionalLight(0xffffff, 1.4); d.position.set(80, 120, 100); scene.add(d);
+  const grupo = new THREE.Group(); scene.add(grupo);
+  const piezas = [['modelos/1_patilla_con_riel.stl', 0x9aa5b1], ['modelos/3_soporte_deslizable.stl', 0x2a9d8f], ['modelos/4_tapa_soporte.stl', 0xe9c46a]];
+  const loader = new STLLoader();
+  await Promise.all(piezas.map(([u, c]) => new Promise((ok, no) => loader.load(u, g => {
+    grupo.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: c, roughness: .55, metalness: .1 }))); ok();
+  }, undefined, no))));
+  grupo.rotation.x = -Math.PI / 2;               // el modelo usa Z como alto
+  const box = new THREE.Box3().setFromObject(grupo), ctr = box.getCenter(new THREE.Vector3());
+  grupo.position.sub(ctr);
+  cam.position.set(110, 80, 140);
+  const ctl = new OrbitControls(cam, r.domElement);
+  ctl.enableDamping = true; ctl.autoRotate = true; ctl.autoRotateSpeed = 1.2;
+  ctl.addEventListener('start', () => ctl.autoRotate = false);
+  const ajustar = () => { const w = cont.clientWidth, h = cont.clientHeight; r.setSize(w, h); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+  addEventListener('resize', ajustar); ajustar();
+  msg.remove();
+  (function loop() { requestAnimationFrame(loop); ctl.update(); r.render(scene, cam); })();
+} catch (e) { msg.textContent = 'No se pudo cargar el modelo 3D en este navegador.'; console.error(e); }
 </script>
 </body>
 </html>
